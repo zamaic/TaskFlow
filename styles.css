@@ -115,7 +115,7 @@ body {
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 600;
-  transition: background var(--transition), color var(--transition);
+  transition: backgroundvar(--transition), color var(--transition);
   white-space: nowrap;
   position: relative;
 }
@@ -139,7 +139,7 @@ body {
   display: flex; align-items: center; justify-content: center;
   background: rgba(255,255,255,0.06);
   flex-shrink: 0;
-  transition: background var(--transition);
+  transition: backgroundvar(--transition);
 }
 
 .nav-icon svg { fill: var(--sidebar-text); transition: fill var(--transition); }
@@ -170,7 +170,7 @@ body {
   color: var(--sidebar-text);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: background var(--transition), transform var(--transition);
+  transition: backgroundvar(--transition), transform var(--transition);
 }
 
 .sidebar-toggle-btn:hover { background: rgba(255,255,255,0.13); color: #fff; }
@@ -222,6 +222,9 @@ body {
   padding: 6px;
 }
 
+/* ==============================
+   PROJECT SELECTOR + DROPDOWN
+   ============================== */
 .topbar-project-selector {
   display: flex;
   align-items: center;
@@ -235,12 +238,70 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
   font-family: 'Raleway', sans-serif;
-  transition: background var(--transition);
+  transition: backgroundvar(--transition);
+  position: relative;  /* anchor for dropdown */
+  user-select: none;
 }
 
 .topbar-project-selector:hover { background: rgba(255,255,255,0.15); }
-.topbar-project-selector i { color: var(--purple); font-size: 0.8rem; }
+.topbar-project-selector i { color: var(--purple); font-size: 0.8rem; transition: transform var(--transition); }
+.topbar-project-selector.open i { transform: rotate(180deg); }
 
+/* --- Dropdown panel --- */
+.project-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 220px;
+  background: #2B2042;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(10,5,20,0.45);
+  z-index: 300;
+  overflow: hidden;
+  animation: dropdownIn 0.18s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.topbar-project-selector.open .project-dropdown { display: block; }
+
+.project-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.72);
+  cursor: pointer;
+  transition: backgroundvar(--transition), color var(--transition);
+  white-space: nowrap;
+}
+
+.project-dropdown-item:hover {
+  background: rgba(255,255,255,0.09);
+  color: #fff;
+}
+
+.project-dropdown-item.active {
+  background: rgba(203,109,238,0.18);
+  color: #fff;
+}
+
+.dropdown-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ==============================
+   TOPBAR RIGHT
+   ============================== */
 .topbar-right {
   display: flex;
   align-items: center;
@@ -254,7 +315,7 @@ body {
   border: 1px solid rgba(255,255,255,0.10);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: background var(--transition);
+  transition: backgroundvar(--transition);
 }
 
 .topbar-btn:hover { background: rgba(255,255,255,0.16); }
@@ -351,7 +412,7 @@ body {
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
+  transition: backgroundvar(--transition), border-color var(--transition);
 }
 
 .btn-secondary:hover { background: var(--ededed); border-color: rgba(0,0,0,0.12); }
@@ -365,7 +426,7 @@ body {
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.8rem;
-  transition: background var(--transition);
+  transition: backgroundvar(--transition);
 }
 
 .icon-btn:hover { background: rgba(203,109,238,0.2); }
@@ -557,7 +618,7 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 0.78rem;
   color: var(--text-secondary);
-  transition: background var(--transition), color var(--transition);
+  transition: backgroundvar(--transition), color var(--transition);
 }
 
 .card-action-btn:hover { background: var(--ededed); }
@@ -844,7 +905,7 @@ select { cursor: pointer; }
   font-size: 0.8rem;
   padding: 4px 6px;
   border-radius: 6px;
-  transition: color var(--transition), background var(--transition);
+  transition: color var(--transition), backgroundvar(--transition);
 }
 
 .project-delete-btn:hover { color: var(--pink); background: rgba(245,142,165,0.1); }

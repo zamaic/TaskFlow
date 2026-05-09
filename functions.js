@@ -1,5 +1,5 @@
 /* ==============================
-   TASKFLOW — script.js
+   TASKFLOW — functions.js
    ============================== */
 
 'use strict';
@@ -63,6 +63,86 @@ const STATUS_DOT_CLASS = {
   'en-curso':  'dot-inprogress',
   'listo':     'dot-done',
 };
+
+/* ==============================
+   PROJECT DROPDOWN (TOPBAR)
+   ============================== */
+
+/**
+ * Rebuilds the dropdown list whenever projects change.
+ * Called after init, after creating/deleting a project.
+ */
+function refreshProjectDropdown() {
+  const dropdown = $('#projectDropdown');
+
+  // Remove all dynamic items (keep the "Todos" item which has id)
+  $$('.project-dropdown-item:not(#dropdownAllProjects)', dropdown).forEach(el => el.remove());
+
+  STATE.projects.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'project-dropdown-item';
+    item.dataset.id = p.id;
+    item.innerHTML = `
+      <span class="dropdown-dot" style="background:${p.color}"></span>
+      ${escapeHtml(p.nombre)}
+    `;
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectProjectFilter(p.id, p.nombre);
+    });
+    dropdown.appendChild(item);
+  });
+
+  // Sync active state
+  syncDropdownActive();
+}
+
+/** Marks the currently selected item as active inside the dropdown */
+function syncDropdownActive() {
+  const dropdown = $('#projectDropdown');
+  $$('.project-dropdown-item', dropdown).forEach(item => {
+    const id = item.dataset.id || '';
+    if (id === (STATE.currentProjectFilter || '')) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+/** Applies a project filter (or clears it when id is null/'') */
+function selectProjectFilter(id, name) {
+  STATE.currentProjectFilter = id || null;
+  $('#currentProjectName').textContent = name;
+  $('#boardTitle').textContent = id ? name : 'Tablero';
+
+  // close dropdown
+  $('#projectSelector').classList.remove('open');
+
+  // make sure board view is active and re-render
+  switchView('board');
+  renderBoard();
+}
+
+/* Toggle dropdown open/close */
+$('#projectSelector').addEventListener('click', function (e) {
+  // Don't toggle if the click was on a dropdown item (they handle themselves)
+  if (e.target.closest('.project-dropdown-item')) return;
+  this.classList.toggle('open');
+});
+
+/* "Todos los proyectos" item */
+$('#dropdownAllProjects').addEventListener('click', (e) => {
+  e.stopPropagation();
+  selectProjectFilter(null, 'Todos los proyectos');
+});
+
+/* Close dropdown when clicking outside */
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#projectSelector')) {
+    $('#projectSelector').classList.remove('open');
+  }
+});
 
 /* ==============================
    RENDER — BOARD
@@ -486,6 +566,7 @@ $('#projectForm').addEventListener('submit', function(e) {
   STATE.projects.push(project);
   saveState();
   populateProjectSelect();
+  refreshProjectDropdown();   // ← update topbar dropdown
   renderProjects();
   hideModal('projectModal');
   showToast(`Proyecto "${name}" creado.`, 'success');
@@ -503,22 +584,19 @@ function deleteProject(projectId, e) {
 
   if (STATE.currentProjectFilter === projectId) {
     STATE.currentProjectFilter = null;
-    $('#currentProjectName').textContent = 'Seleccionar proyecto';
+    $('#currentProjectName').textContent = 'Todos los proyectos';
     $('#boardTitle').textContent = 'Tablero';
   }
 
   saveState();
+  refreshProjectDropdown();   // ← update topbar dropdown
   renderAll();
   showToast(`Proyecto "${project.nombre}" eliminado.`, 'info');
 }
 
 function filterByProject(projectId, projectName, e) {
   if (e) e.stopPropagation();
-  STATE.currentProjectFilter = projectId;
-  $('#currentProjectName').textContent = projectName;
-  $('#boardTitle').textContent = projectName;
-  switchView('board');
-  renderBoard();
+  selectProjectFilter(projectId, projectName);
 }
 
 /* ---- Color swatch ---- */
@@ -770,9 +848,7 @@ $$('.nav-item').forEach(item => {
     sidebar.classList.remove('mobile-open');
 
     if (view === 'board') {
-      STATE.currentProjectFilter = null;
-      $('#currentProjectName').textContent = 'Todos los proyectos';
-      $('#boardTitle').textContent = 'Tablero';
+      // keep the current filter when navigating back to board
     }
 
     switchView(view);
@@ -801,15 +877,6 @@ $('#clearNotifBtn').addEventListener('click', () => {
   showToast('Notificaciones limpiadas.', 'info');
 });
 
-// Project selector in topbar — clear filter
-$('#projectSelector').addEventListener('click', () => {
-  STATE.currentProjectFilter = null;
-  $('#currentProjectName').textContent = 'Todos los proyectos';
-  $('#boardTitle').textContent = 'Tablero';
-  switchView('board');
-  renderBoard();
-});
-
 // Overlay click closes modals
 $('#overlay').addEventListener('click', () => {
   $$('.modal.open').forEach(m => hideModal(m.id));
@@ -822,6 +889,7 @@ $('#overlay').addEventListener('click', () => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     $$('.modal.open').forEach(m => hideModal(m.id));
+    $('#projectSelector').classList.remove('open');
   }
 });
 
@@ -854,6 +922,7 @@ function init() {
 
   renderAll();
   populateProjectSelect();
+  refreshProjectDropdown();   // ← populate topbar dropdown on start
   switchView('board');
   $('#currentProjectName').textContent = 'Todos los proyectos';
   $('#boardTitle').textContent = 'Tablero';
