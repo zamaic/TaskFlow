@@ -75,8 +75,8 @@ const STATUS_DOT_CLASS = {
 function refreshProjectDropdown() {
   const dropdown = $('#projectDropdown');
 
-  // Remove all dynamic items (keep the "Todos" item which has id)
-  $$('.project-dropdown-item:not(#dropdownAllProjects)', dropdown).forEach(el => el.remove());
+  // Remove all dynamic items 
+  $$('.project-dropdown-item', dropdown).forEach(el => el.remove());
 
   STATE.projects.forEach(p => {
     const item = document.createElement('div');
@@ -131,12 +131,6 @@ $('#projectSelector').addEventListener('click', function (e) {
   this.classList.toggle('open');
 });
 
-/* "Todos los proyectos" item */
-$('#dropdownAllProjects').addEventListener('click', (e) => {
-  e.stopPropagation();
-  selectProjectFilter(null, 'Todos los proyectos');
-});
-
 /* Close dropdown when clicking outside */
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#projectSelector')) {
@@ -148,34 +142,122 @@ document.addEventListener('click', (e) => {
    RENDER — BOARD
    ============================== */
 function renderBoard() {
-  const statuses = ['pendiente', 'en-curso', 'listo'];
+  const board = $('#kanbanBoard');
+  const project = STATE.currentProjectFilter
+    ? STATE.projects.find(p => p.id === STATE.currentProjectFilter)
+    : null;
 
-  statuses.forEach(status => {
-    const container = $(`#tasks-${status}`);
-    const emptyEl   = $(`#empty-${status}`);
-    const countEl   = $(`#count-${status}`);
+  const useCustomCols = project && Array.isArray(project.columns) && project.columns.length > 0;
 
-    // filter tasks
-    let tasks = STATE.tasks.filter(t => t.estado === status);
-    if (STATE.currentProjectFilter) {
-      tasks = tasks.filter(t => t.proyectoId === STATE.currentProjectFilter);
-    }
+  if (useCustomCols) {
+    board.innerHTML = '';
+    project.columns.forEach(col => {
+      const colEl = document.createElement('div');
+      colEl.className = 'kanban-column';
+      colEl.dataset.colId = col.id;
+      colEl.innerHTML = `
+        <div class="column-header">
+          <div class="column-title-wrap">
+            <span class="column-dot" style="background:${col.color}"></span>
+            <h2 class="column-title">${escapeHtml(col.name)}</h2>
+            <span class="column-count" id="count-col-${col.id}">0</span>
+          </div>
+        </div>
+        <div class="column-body" id="tasks-col-${col.id}">
+          <div class="empty-state" id="empty-col-${col.id}">
+            <i class="fa-regular fa-file"></i>
+            <p>Sin tareas</p>
+          </div>
+        </div>
+      `;
+      const body = colEl.querySelector('.column-body');
+      body.addEventListener('dragover',  (e) => onDragOver(e));
+      body.addEventListener('drop',      (e) => onDropCustom(e, col.id));
+      body.addEventListener('dragleave', (e) => onDragLeave(e));
+      board.appendChild(colEl);
+    });
 
-    // clear rendered cards (keep empty-state)
-    $$('.task-card', container).forEach(el => el.remove());
-    $$('.drag-placeholder', container).forEach(el => el.remove());
+    project.columns.forEach(col => {
+      const container = $(`#tasks-col-${col.id}`);
+      const emptyEl   = $(`#empty-col-${col.id}`);
+      const countEl   = $(`#count-col-${col.id}`);
+      const tasks = STATE.tasks.filter(t =>
+        t.proyectoId === project.id && t.columnaId === col.id
+      );
+      $$('.task-card', container).forEach(el => el.remove());
+      countEl.textContent = tasks.length;
+      emptyEl.style.display = tasks.length === 0 ? 'flex' : 'none';
+      tasks.forEach(task => container.appendChild(createTaskCard(task)));
+    });
 
-    countEl.textContent = tasks.length;
+  } else {
+    // Siempre reconstruir el board estático de 3 columnas
+    board.innerHTML = `
+      <div class="kanban-column" data-status="pendiente" id="col-pendiente">
+        <div class="column-header">
+          <div class="column-title-wrap">
+            <span class="column-dot dot-pending"></span>
+            <h2 class="column-title">Pendiente</h2>
+            <span class="column-count" id="count-pendiente">0</span>
+          </div>
+        </div>
+        <div class="column-body" id="tasks-pendiente">
+          <div class="empty-state" id="empty-pendiente">
+            <i class="fa-regular fa-file"></i><p>Sin tareas pendientes</p>
+          </div>
+        </div>
+      </div>
+      <div class="kanban-column" data-status="en-curso" id="col-en-curso">
+        <div class="column-header">
+          <div class="column-title-wrap">
+            <span class="column-dot dot-inprogress"></span>
+            <h2 class="column-title">En Curso</h2>
+            <span class="column-count" id="count-en-curso">0</span>
+          </div>
+        </div>
+        <div class="column-body" id="tasks-en-curso">
+          <div class="empty-state" id="empty-en-curso">
+            <i class="fa-regular fa-file"></i><p>Sin tareas en curso</p>
+          </div>
+        </div>
+      </div>
+      <div class="kanban-column" data-status="listo" id="col-listo">
+        <div class="column-header">
+          <div class="column-title-wrap">
+            <span class="column-dot dot-done"></span>
+            <h2 class="column-title">Listo</h2>
+            <span class="column-count" id="count-listo">0</span>
+          </div>
+        </div>
+        <div class="column-body" id="tasks-listo">
+          <div class="empty-state" id="empty-listo">
+            <i class="fa-regular fa-file"></i><p>Sin tareas completadas</p>
+          </div>
+        </div>
+      </div>
+    `;
+    [['tasks-pendiente','pendiente'],['tasks-en-curso','en-curso'],['tasks-listo','listo']].forEach(([id, status]) => {
+      const el = $(`#${id}`);
+      el.addEventListener('dragover',  (e) => onDragOver(e));
+      el.addEventListener('drop',      (e) => onDrop(e, status));
+      el.addEventListener('dragleave', (e) => onDragLeave(e));
+    });
 
-    if (tasks.length === 0) {
-      emptyEl.style.display = 'flex';
-    } else {
-      emptyEl.style.display = 'none';
-      tasks.forEach(task => {
-        container.appendChild(createTaskCard(task));
-      });
-    }
-  });
+    const statuses = ['pendiente', 'en-curso', 'listo'];
+    statuses.forEach(status => {
+      const container = $(`#tasks-${status}`);
+      const emptyEl   = $(`#empty-${status}`);
+      const countEl   = $(`#count-${status}`);
+      let tasks = STATE.tasks.filter(t => t.estado === status);
+      if (STATE.currentProjectFilter) {
+        tasks = tasks.filter(t => t.proyectoId === STATE.currentProjectFilter);
+      }
+      $$('.task-card', container).forEach(el => el.remove());
+      countEl.textContent = tasks.length;
+      emptyEl.style.display = tasks.length === 0 ? 'flex' : 'none';
+      tasks.forEach(task => container.appendChild(createTaskCard(task)));
+    });
+  }
 
   updateTaskCount();
 }
@@ -256,12 +338,20 @@ function renderProjects() {
         <span class="project-stat"><i class="fa-solid fa-check"></i> ${doneCount} listas</span>
       </div>
       <div class="project-card-footer">
-        <button class="btn-secondary" style="padding:6px 12px;font-size:0.76rem;" onclick="filterByProject('${project.id}', '${escapeHtml(project.nombre)}', event)">Ver tablero</button>
-        <button class="project-delete-btn" title="Eliminar proyecto" onclick="deleteProject('${project.id}', event)">
+        <button class="btn-secondary project-view-btn" style="padding:6px 12px;font-size:0.76rem;">Ver tablero</button>
+        <button class="project-delete-btn" title="Eliminar proyecto" >
           <i class="fa-solid fa-circle-xmark"></i>
         </button>
       </div>
     `;
+
+    card.querySelector('.project-view-btn').addEventListener('click', (e) => {
+      filterByProject(project.id, project.nombre, e);
+    });
+    card.querySelector('.project-delete-btn').addEventListener('click', (e) => {
+      deleteProject(project.id, e);
+    });
+
     grid.appendChild(card);
   });
 }
@@ -431,13 +521,71 @@ function populateProjectSelect() {
   });
 }
 
+function populateStatusSelect(proyectoId) {
+  const sel = $('#taskStatus');
+  sel.innerHTML = '';
+
+  const project = proyectoId ? STATE.projects.find(p => p.id === proyectoId) : null;
+  const useCustomCols = project && Array.isArray(project.columns) && project.columns.length > 0;
+
+  if (useCustomCols) {
+    project.columns.forEach(col => {
+      const opt = document.createElement('option');
+      opt.value = col.id;          // columnaId
+      opt.textContent = col.name;
+      sel.appendChild(opt);
+    });
+  } else {
+    // Proyecto sin columnas o sin proyecto → opciones clásicas
+    [['pendiente','Pendiente'],['en-curso','En Curso'],['listo','Listo']].forEach(([v, l]) => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = l;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+function deleteProject(projectId, e) {
+  if (e) e.stopPropagation();
+  const project = STATE.projects.find(p => p.id === projectId);
+  if (!project) return;
+  if (!confirm(`¿Eliminar el proyecto "${project.nombre}"? Las tareas asociadas quedarán sin proyecto.`)) return;
+
+  STATE.projects = STATE.projects.filter(p => p.id !== projectId);
+  STATE.tasks = STATE.tasks.map(t => t.proyectoId === projectId ? { ...t, proyectoId: null } : t);
+
+  saveState();
+  refreshProjectDropdown();
+
+  if (STATE.currentProjectFilter === projectId) {
+    if (STATE.projects.length > 0) {
+      selectProjectFilter(STATE.projects[0].id, STATE.projects[0].nombre);
+    } else {
+      STATE.currentProjectFilter = null;
+      $('#currentProjectName').textContent = 'Sin proyecto';
+      $('#boardTitle').textContent = 'Tablero';
+      renderAll();
+    }
+  } else {
+    renderAll();
+  }
+
+  showToast(`Proyecto "${project.nombre}" eliminado.`, 'info');
+  addNotification(`Proyecto eliminado: "${project.nombre}"`);
+}
+
+function filterByProject(projectId, projectName, e) {
+  if (e) e.stopPropagation();
+  selectProjectFilter(projectId, projectName);
+}
+
 /* ==============================
    MODAL — TASK
    ============================== */
 function openTaskModal(editId = null) {
-  const modal = $('#taskModal');
-  const form  = $('#taskForm');
-  const title = $('#modalTitle');
+  const form    = $('#taskForm');
+  const title   = $('#modalTitle');
   const saveBtn = $('#saveTaskBtn');
 
   form.reset();
@@ -450,22 +598,32 @@ function openTaskModal(editId = null) {
   if (editId) {
     const task = STATE.tasks.find(t => t.id === editId);
     if (!task) return;
-    title.textContent = 'Editar Tarea';
-    saveBtn.textContent = 'Guardar Cambios';
-    $('#taskTitle').value     = task.titulo;
-    $('#taskDesc').value      = task.descripcion || '';
-    $('#taskAssignee').value  = task.asignadoA || '';
-    $('#taskStatus').value    = task.estado;
-    $('#taskPriority').value  = task.prioridad;
-    $('#taskProject').value   = task.proyectoId || '';
+    title.textContent    = 'Editar Tarea';
+    saveBtn.textContent  = 'Guardar Cambios';
+    $('#taskTitle').value    = task.titulo;
+    $('#taskDesc').value     = task.descripcion || '';
+    $('#taskAssignee').value = task.asignadoA || '';
+    $('#taskPriority').value = task.prioridad;
+    $('#taskProject').value  = task.proyectoId || '';
     $('#editingTaskId').value = task.id;
+    // Populate status based on this task's project
+    populateStatusSelect(task.proyectoId);
+    // Set status: for custom cols use columnaId, else estado
+    const project = task.proyectoId ? STATE.projects.find(p => p.id === task.proyectoId) : null;
+    const useCustom = project && Array.isArray(project.columns) && project.columns.length > 0;
+    $('#taskStatus').value = useCustom ? (task.columnaId || '') : (task.estado || 'pendiente');
   } else {
-    title.textContent = 'Nueva Tarea';
+    title.textContent   = 'Nueva Tarea';
     saveBtn.textContent = 'Guardar Tarea';
-    if (STATE.currentProjectFilter) {
-      $('#taskProject').value = STATE.currentProjectFilter;
-    }
+    const projId = STATE.currentProjectFilter || '';
+    if (projId) $('#taskProject').value = projId;
+    populateStatusSelect(projId || null);
   }
+
+  // Re-populate status when project changes
+  $('#taskProject').onchange = function() {
+    populateStatusSelect(this.value || null);
+  };
 
   showModal('taskModal');
 }
@@ -488,13 +646,19 @@ $('#taskForm').addEventListener('submit', function(e) {
 
   const editId = $('#editingTaskId').value;
 
+  const proyectoId = $('#taskProject').value || null;
+  const project    = proyectoId ? STATE.projects.find(p => p.id === proyectoId) : null;
+  const useCustom  = project && Array.isArray(project.columns) && project.columns.length > 0;
+  const statusVal  = $('#taskStatus').value;
+
   const taskData = {
     titulo:      titleVal,
     descripcion: $('#taskDesc').value.trim(),
     asignadoA:   $('#taskAssignee').value.trim(),
-    estado:      $('#taskStatus').value,
+    estado:      useCustom ? 'pendiente' : statusVal,   // mantiene estado clásico para compatibilidad
+    columnaId:   useCustom ? statusVal : null,
     prioridad:   $('#taskPriority').value,
-    proyectoId:  $('#taskProject').value || null,
+    proyectoId,
   };
 
   if (editId) {
@@ -536,70 +700,318 @@ function deleteTask(taskId, e) {
 }
 
 /* ==============================
-   MODAL — PROJECT
+   MODAL — PROJECT WIZARD
    ============================== */
+
+// Wizard state
+const WIZ = {
+  step: 1,
+  structure: null,     // 'small' | 'large' | 'manual'
+  manualCols: [],      // [{name, color, order}]
+  members: [],
+  pendingColColor: '#F3CCFF',
+};
+
 function openProjectModal() {
-  $('#projectForm').reset();
+  // Reset wizard
+  WIZ.step = 1;
+  WIZ.structure = null;
+  WIZ.manualCols = [];
+  WIZ.members = [];
+
+  $('#projectName').value      = '';
+  $('#projectClient').value    = '';
+  $('#projectDesc').value      = '';
+  $('#projectStartDate').value = new Date().toISOString().slice(0, 10);
   $('#projectNameError').textContent = '';
   $('#projectColor').value = '#CB6DEE';
+  $('#memberInput').value  = '';
+  $('#membersChips').innerHTML = '';
   $$('.color-swatch').forEach(s => s.classList.remove('active'));
   $$('.color-swatch')[0]?.classList.add('active');
+  $('#modeEquipo').checked = true;
+  $('#membersGroup').style.display = '';
+
+  $$('.structure-option').forEach(o => o.classList.remove('selected'));
+
+  wizGoTo(1);
   showModal('projectModal');
 }
 
-$('#projectForm').addEventListener('submit', function(e) {
-  e.preventDefault();
+function wizGoTo(step) {
+  WIZ.step = step;
+  $$('.wizard-step').forEach(el => {
+    const n = parseInt(el.dataset.step);
+    el.classList.toggle('active', n === step);
+    el.classList.toggle('done', n < step);
+  });
+  $$('.wizard-panel').forEach(p => p.classList.remove('active'));
+  $(`#wizardStep${step}`).classList.add('active');
+}
+
+// Step 1 → 2
+$('#wizardNext1').addEventListener('click', () => {
   const name = $('#projectName').value.trim();
   if (!name) {
     $('#projectNameError').textContent = 'El nombre es obligatorio.';
+    $('#projectName').focus();
     return;
   }
   $('#projectNameError').textContent = '';
+  wizGoTo(2);
+});
+
+// Step 2 → 3 (structure selection)
+$$('.structure-option').forEach(btn => {
+  btn.addEventListener('click', function() {
+    $$('.structure-option').forEach(o => o.classList.remove('selected'));
+    this.classList.add('selected');
+    WIZ.structure = this.dataset.structure;
+    buildTemplatePreview(WIZ.structure);
+    wizGoTo(3);
+  });
+});
+
+// Step 3 back → 2
+$('#wizardBack2').addEventListener('click', () => wizGoTo(2));
+
+// Step 2 back → 1
+$('#wizardBack1').addEventListener('click', () => wizGoTo(1));
+
+function buildTemplatePreview(structure) {
+  const preview = $('#templatePreview');
+  const builder = $('#manualBuilder');
+  const label   = $('#templatePreviewLabel');
+
+  preview.innerHTML = '';
+
+  if (structure === 'small') {
+    preview.style.display = '';
+    builder.style.display = 'none';
+    label.textContent = 'Vista previa de plantilla sugerida para proyecto pequeño';
+    const cols = [
+      { name: 'Pendiente', bg: '#F9C8D0' },
+      { name: 'En curso',  bg: '#C0DEFF' },
+      { name: 'Hecho',     bg: '#C8EFC0' },
+    ];
+    cols.forEach(c => preview.appendChild(makePreviewCol(c.name, c.bg, 3)));
+  } else if (structure === 'large') {
+    preview.style.display = '';
+    builder.style.display = 'none';
+    label.textContent = 'Vista previa de plantilla sugerida para proyecto grande';
+    const cols = [
+      { name: 'Backlog',     bg: '#F3CCFF' },
+      { name: 'Diseño',      bg: '#F9C8D0' },
+      { name: 'Desarrollo',  bg: '#FFF0B0' },
+      { name: 'Revisión',    bg: '#C8EFC0' },
+      { name: 'Aprobado',    bg: '#C0DEFF' },
+    ];
+    cols.forEach(c => preview.appendChild(makePreviewCol(c.name, c.bg, 2)));
+  } else {
+    preview.style.display = 'none';
+    builder.style.display = '';
+    label.textContent = 'Cree sus columnas';
+    WIZ.manualCols = [];
+    renderManualCols();
+  }
+}
+
+function makePreviewCol(name, bg, cardCount) {
+  const col = document.createElement('div');
+  col.className = 'preview-col';
+  col.style.background = bg;
+  let cards = '';
+  for (let i = 0; i < cardCount; i++) cards += '<div class="preview-card"></div>';
+  col.innerHTML = `<span class="preview-col-name">${name}</span>${cards}`;
+  return col;
+}
+
+/* ---- Manual column builder ---- */
+function renderManualCols() {
+  const row = $('#manualColsRow');
+  // Remove existing col tiles (not the add button)
+  $$('.manual-col-tile', row).forEach(el => el.remove());
+
+  WIZ.manualCols.forEach((col, idx) => {
+    const tile = document.createElement('div');
+    tile.className = 'manual-col-tile';
+    tile.style.background = col.color;
+    tile.innerHTML = `
+      <span class="manual-col-name">${escapeHtml(col.name)}</span>
+      <div class="preview-card"></div>
+      <button type="button" class="manual-col-remove" data-idx="${idx}" title="Eliminar">
+        <i class="fa-solid fa-circle-xmark"></i>
+      </button>
+    `;
+    row.insertBefore(tile, $('#addColBtn'));
+  });
+
+  // Remove listeners to avoid duplication
+  $$('.manual-col-remove').forEach(btn => {
+    btn.onclick = function() {
+      WIZ.manualCols.splice(parseInt(this.dataset.idx), 1);
+      renderManualCols();
+      syncConfirmBtn();
+    };
+  });
+
+  syncConfirmBtn();
+}
+
+function syncConfirmBtn() {
+  const btn = $('#wizardConfirm');
+  if (WIZ.structure === 'manual') {
+    btn.disabled = WIZ.manualCols.length === 0;
+    btn.style.opacity = WIZ.manualCols.length === 0 ? '0.45' : '1';
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+$('#addColBtn').addEventListener('click', () => {
+  $('#colName').value = '';
+  $('#colNameError').textContent = '';
+  WIZ.pendingColColor = '#F3CCFF';
+  $$('.col-color-opt').forEach(o => o.classList.remove('active'));
+  $$('.col-color-opt')[0]?.classList.add('active');
+  updateColColorBtn('#F3CCFF', 'Morado');
+  showModal('addColumnModal');
+});
+
+$('#closeAddColModal').addEventListener('click', () => hideModal('addColumnModal'));
+$('#cancelAddCol').addEventListener('click', () => hideModal('addColumnModal'));
+
+$('#acceptAddCol').addEventListener('click', () => {
+  const name = $('#colName').value.trim();
+  if (!name) {
+    $('#colNameError').textContent = 'El nombre es obligatorio.';
+    return;
+  }
+  WIZ.manualCols.push({
+    name,
+    color: WIZ.pendingColColor,
+    order: $('#colOrder').value,
+  });
+  hideModal('addColumnModal');
+  renderManualCols();
+});
+
+// Column color dropdown
+$('#colColorSelect').addEventListener('click', function(e) {
+  const opt = e.target.closest('.col-color-opt');
+  if (opt) {
+    const color = opt.dataset.color;
+    const label = opt.textContent.trim();
+    WIZ.pendingColColor = color;
+    $$('.col-color-opt').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    updateColColorBtn(color, label);
+    $('#colColorDropdown').style.display = 'none';
+    return;
+  }
+  if (e.target.closest('.col-color-btn')) {
+    const dd = $('#colColorDropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  }
+});
+
+function updateColColorBtn(color, label) {
+  const btn = $('.col-color-btn', $('#colColorSelect'));
+  btn.style.background = color;
+  btn.innerHTML = `<span>${label}</span><i class="fa-solid fa-angle-down"></i>`;
+}
+
+/* ---- Confirm / create project ---- */
+$('#wizardConfirm').addEventListener('click', () => {
+  const name = $('#projectName').value.trim();
+
+  // Build columns list for the project
+  let columns;
+  if (WIZ.structure === 'small') {
+    columns = [
+      { id: uid(), name: 'Pendiente', color: '#F9C8D0', order: 'fecha' },
+      { id: uid(), name: 'En curso',  color: '#C0DEFF', order: 'fecha' },
+      { id: uid(), name: 'Hecho',     color: '#C8EFC0', order: 'fecha' },
+    ];
+  } else if (WIZ.structure === 'large') {
+    columns = [
+      { id: uid(), name: 'Backlog',    color: '#F3CCFF', order: 'fecha' },
+      { id: uid(), name: 'Diseño',     color: '#F9C8D0', order: 'fecha' },
+      { id: uid(), name: 'Desarrollo', color: '#FFF0B0', order: 'fecha' },
+      { id: uid(), name: 'Revisión',   color: '#C8EFC0', order: 'fecha' },
+      { id: uid(), name: 'Aprobado',   color: '#C0DEFF', order: 'fecha' },
+    ];
+  } else {
+    columns = WIZ.manualCols.map(c => ({ id: uid(), name: c.name, color: c.color, order: c.order }));
+  }
 
   const project = {
     id:          uid(),
     nombre:      name,
+    cliente:     $('#projectClient').value.trim(),
     descripcion: $('#projectDesc').value.trim(),
+    fechaInicio: $('#projectStartDate').value,
+    modoTrabajo: $('input[name="workMode"]:checked')?.value || 'equipo',
+    miembros:    [...WIZ.members],
     color:       $('#projectColor').value || '#CB6DEE',
+    columns,
   };
 
   STATE.projects.push(project);
   saveState();
   populateProjectSelect();
-  refreshProjectDropdown();   // ← update topbar dropdown
-  renderProjects();
+  refreshProjectDropdown();
   hideModal('projectModal');
   showToast(`Proyecto "${name}" creado.`, 'success');
   addNotification(`Nuevo proyecto creado: "${name}"`);
+
+  renderProjects();
+  // Navigate to the project board
+  filterByProject(project.id, project.nombre);
 });
 
-function deleteProject(projectId, e) {
-  if (e) e.stopPropagation();
-  const project = STATE.projects.find(p => p.id === projectId);
-  if (!project) return;
-  if (!confirm(`¿Eliminar el proyecto "${project.nombre}"? Las tareas asociadas quedarán sin proyecto.`)) return;
+/* ---- Work mode radio toggle ---- */
+$$('input[name="workMode"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    $('#membersGroup').style.display = this.value === 'cuenta' ? 'none' : '';
+  });
+});
 
-  STATE.projects = STATE.projects.filter(p => p.id !== projectId);
-  STATE.tasks = STATE.tasks.map(t => t.proyectoId === projectId ? { ...t, proyectoId: null } : t);
+/* ---- Member chips ---- */
+function addMemberChip(name) {
+  if (!name || WIZ.members.includes(name)) return;
+  WIZ.members.push(name);
+  const chip = document.createElement('span');
+  chip.className = 'member-chip';
+  chip.innerHTML = `
+    <div class="assignee-avatar" style="width:20px;height:20px;font-size:0.6rem;flex-shrink:0;">
+      ${name.split(' ').slice(0,2).map(n=>n[0]?.toUpperCase()||'').join('')}
+    </div>
+    ${escapeHtml(name)}
+    <button type="button" data-name="${escapeHtml(name)}"><i class="fa-solid fa-xmark"></i></button>
+  `;
+  chip.querySelector('button').addEventListener('click', function() {
+    WIZ.members = WIZ.members.filter(m => m !== this.dataset.name);
+    chip.remove();
+  });
+  $('#membersChips').appendChild(chip);
+}
 
-  if (STATE.currentProjectFilter === projectId) {
-    STATE.currentProjectFilter = null;
-    $('#currentProjectName').textContent = 'Todos los proyectos';
-    $('#boardTitle').textContent = 'Tablero';
+$('#memberAddBtn').addEventListener('click', () => {
+  const val = $('#memberInput').value.trim();
+  if (val) { addMemberChip(val); $('#memberInput').value = ''; }
+});
+
+$('#memberInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = $('#memberInput').value.trim();
+    if (val) { addMemberChip(val); $('#memberInput').value = ''; }
   }
+});
 
-  saveState();
-  refreshProjectDropdown();   // ← update topbar dropdown
-  renderAll();
-  showToast(`Proyecto "${project.nombre}" eliminado.`, 'info');
-}
-
-function filterByProject(projectId, projectName, e) {
-  if (e) e.stopPropagation();
-  selectProjectFilter(projectId, projectName);
-}
-
-/* ---- Color swatch ---- */
+/* ---- Color swatch (step 1) ---- */
 $('#colorPickerRow').addEventListener('click', function(e) {
   const swatch = e.target.closest('.color-swatch');
   if (!swatch) return;
@@ -737,6 +1149,18 @@ function onDrop(e, newStatus) {
   renderAll();
   showToast(`Tarea movida a "${STATUS_LABELS[newStatus]}".`, 'success');
   addNotification(`Tarea "${STATE.tasks[idx].titulo}" movida a ${STATUS_LABELS[newStatus]}`);
+}
+
+function onDropCustom(e, colId) {
+  e.preventDefault();
+  const taskId = STATE.draggedTaskId || e.dataTransfer.getData('text/plain');
+  if (!taskId) return;
+  const idx = STATE.tasks.findIndex(t => t.id === taskId);
+  if (idx === -1) return;
+  STATE.tasks[idx].columnaId = colId;
+  saveState();
+  renderAll();
+  showToast('Tarea movida.', 'success');
 }
 
 /* ==============================
@@ -924,8 +1348,12 @@ function init() {
   populateProjectSelect();
   refreshProjectDropdown();   // ← populate topbar dropdown on start
   switchView('board');
-  $('#currentProjectName').textContent = 'Todos los proyectos';
-  $('#boardTitle').textContent = 'Tablero';
+  if (STATE.projects.length > 0) {
+    selectProjectFilter(STATE.projects[0].id, STATE.projects[0].nombre);
+  } else {
+    $('#currentProjectName').textContent = 'Sin proyecto';
+    $('#boardTitle').textContent = 'Tablero';
+  }
 }
 
 init();
