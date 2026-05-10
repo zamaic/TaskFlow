@@ -1,0 +1,526 @@
+/* ==============================
+   TASKFLOW — login.css
+   ============================== */
+
+/* ---- RESET & BASE ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #CB6DEE;
+  --purple-dark: #b258d6;
+  --pink:        #F58EA5;
+  --blue:        #7AB7E3;
+  --green:       #B9DFA4;
+  --yellow:      #FFE285;
+  --teal:        #72DCC3;
+  --white:       #FFFFFF;
+  --text:        #1A1430;
+  --muted:       #6B6880;
+  --border:      #e8e4f0;
+  --input-bg:    #f7f5fc;
+  --sidebar-bg:  #1E1730;
+  --transition:  0.22s cubic-bezier(.4,0,.2,1);
+}
+
+html, body {
+  min-height: 100vh;
+  font-family: 'Raleway', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  background: #0f0a1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+}
+
+/* ---- MESH GRADIENT ORBS ---- */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  width: 600px; height: 600px;
+  top: -160px; left: -160px;
+  background: radial-gradient(circle, rgba(203,109,238,0.45) 0%, rgba(122,152,227,0.25) 50%, transparent 70%);
+  animation: orbFloat1 8s ease-in-out infinite alternate;
+}
+
+body::after {
+  width: 500px; height: 500px;
+  bottom: -140px; right: -100px;
+  background: radial-gradient(circle, rgba(245,142,165,0.4) 0%, rgba(114,220,195,0.2) 55%, transparent 72%);
+  animation: orbFloat2 10s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat1 {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(40px, 50px) scale(1.08); }
+}
+
+@keyframes orbFloat2 {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(-30px, -40px) scale(1.06); }
+}
+
+/* Orbe central */
+.bg-orb {
+  position: fixed;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(122,183,227,0.18) 0%, transparent 68%);
+  filter: blur(50px);
+  pointer-events: none;
+  z-index: 0;
+  animation: orbFloat3 12s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat3 {
+  from { transform: translate(-50%,-50%) scale(1); }
+  to   { transform: translate(-50%,-50%) scale(1.15); }
+}
+
+/* Grain / ruido de fondo */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* ==============================
+   CARD
+   ============================== */
+.card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 460px;
+  background: var(--white);
+  border-radius: 24px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.12),
+    0 30px 80px rgba(10,5,25,0.55),
+    0 0 60px rgba(203,109,238,0.12);
+  overflow: hidden;
+  animation: cardUp 0.55s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes cardUp {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==============================
+   CARD TOP — Logo + Tabs
+   ============================== */
+.card-top {
+  background: var(--sidebar-bg);
+  padding: 22px 28px 0;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--purple), #7A98E3);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: 0.4px;
+}
+
+/* ---- TABS ---- */
+.tabs {
+  display: flex;
+  position: relative;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 13px 20px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.tab-btn.active { color: var(--white); }
+.tab-btn:hover  { color: rgba(255,255,255,0.75); }
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--purple), var(--pink));
+  border-radius: 3px 3px 0 0;
+  transition: left 0.3s cubic-bezier(.4,0,.2,1), width 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+/* ==============================
+   CARD BODY
+   ============================== */
+.card-body {
+  padding: 30px 28px 28px;
+  background: var(--white);
+}
+
+/* ==============================
+   PANELS
+   ============================== */
+.panel {
+  display: none;
+  animation: panelIn 0.28s cubic-bezier(.4,0,.2,1) both;
+}
+
+.panel.active { display: block; }
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.panel-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.panel-subtitle {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+/* ==============================
+   FORMULARIO
+   ============================== */
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+/* Input wrapper con ícono izquierdo */
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap > svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  fill: var(--muted);
+  pointer-events: none;
+  transition: fill var(--transition);
+}
+
+input,
+select {
+  width: 100%;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 44px 12px 42px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(203,109,238,0.14);
+  background: var(--white);
+}
+
+input.error { border-color: var(--pink) !important; }
+
+/* Error bajo el campo */
+.field-error {
+  display: block;
+  font-size: 0.73rem;
+  color: var(--pink);
+  font-weight: 700;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+/* ---- Botón ojo (ver contraseña) ---- */
+.eye-btn {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color var(--transition);
+}
+
+.eye-btn:hover { color: var(--purple); }
+.eye-btn svg { fill: currentColor; width: 18px; height: 18px; }
+
+/* ---- Barra de fortaleza de contraseña ---- */
+.pw-strength {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.pw-bar {
+  flex: 1; height: 3px;
+  border-radius: 3px;
+  background: #eee;
+  transition: background 0.3s;
+}
+
+.pw-bar.weak   { background: var(--pink); }
+.pw-bar.medium { background: var(--yellow); }
+.pw-bar.strong { background: var(--green); }
+
+/* ---- Pills de rol ---- */
+.role-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.role-pill {
+  flex: 1;
+  min-width: 88px;
+  text-align: center;
+  padding: 8px 6px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--input-bg);
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  position: relative;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+  user-select: none;
+}
+
+.role-pill input[type="radio"] {
+  position: absolute; opacity: 0; width: 0; height: 0;
+}
+
+.role-pill.selected {
+  border-color: var(--purple);
+  background: rgba(203,109,238,0.1);
+  color: var(--purple-dark);
+}
+
+.role-pill:hover:not(.selected) {
+  border-color: rgba(203,109,238,0.4);
+  background: rgba(203,109,238,0.05);
+}
+
+.pill-icon {
+  font-size: 1.1rem;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ==============================
+   BOTÓN PRINCIPAL
+   ============================== */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--purple) 0%, #7A98E3 100%);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 6px 22px rgba(203,109,238,0.38);
+  transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Brillo interno */
+.btn-submit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.16), transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.btn-submit:hover {
+  opacity: 0.92;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(203,109,238,0.48);
+}
+
+.btn-submit:active { transform: translateY(0); }
+
+/* ==============================
+   DIVISOR
+   ============================== */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: #ccc;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eee;
+}
+
+/* ==============================
+   BOTÓN GOOGLE
+   ============================== */
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  background: var(--white);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+.btn-google:hover {
+  background: #f9f7fe;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+/* ==============================
+   NOTA AL PIE
+   ============================== */
+.card-note {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.card-note .tab-link {
+  color: var(--purple);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.card-note .tab-link:hover { text-decoration: underline; }
+
+/* ==============================
+   TOASTS
+   ============================== */
+.toast-wrap {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: #1E1730;
+  color: var(--white);
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  font-family: 'Raleway', sans-serif;
+  box-shadow: 0 6px 24px rgba(10,5,20,0.35);
+  display: flex; align-items: center; gap: 10px;
+  max-width: 300px;
+  animation: toastIn 0.28s cubic-bezier(.4,0,.2,1);
+  pointer-events: all;
+}
+
+.toast.success { border-left: 4px solid var(--green); }
+.toast.error   { border-left: 4px solid var(--pink); }
+.toast.info    { border-left: 4px solid var(--blue); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastOut {
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+/* ==============================
+   RESPONSIVE
+   ============================== */
+@media (max-width: 480px) {
+  .card-body { padding: 24px 20px 22px; }
+  .card-top  { padding: 18px 20px 0; }
+  .role-pills { gap: 6px; }
+  .role-pill { min-width: 72px; font-size: 0.7rem; }
+}

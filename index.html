@@ -108,11 +108,21 @@
             <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Z"/>
           </svg>
         </button>
-        <button class="topbar-btn avatar-btn" title="Usuario">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="22" height="22" fill="#fff">
-            <path d="M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm60,8A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.09,88.09,0,0,0-91.47-87.93C77.43,41.89,39.87,81.12,40,128.25a87.65,87.65,0,0,0,22.24,58.16A79.71,79.71,0,0,1,84,165.1a4,4,0,0,1,4.83.32,59.83,59.83,0,0,0,78.28,0,4,4,0,0,1,4.83-.32,79.71,79.71,0,0,1,21.79,21.31A87.62,87.62,0,0,0,216,128Z"/>
-          </svg>
-        </button>
+        <button class="topbar-btn avatar-btn" title="Usuario" id="userMenuBtn">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="22" height="22" fill="#fff">
+    <path d="M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm60,8A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.09,88.09,0,0,0-91.47-87.93C77.43,41.89,39.87,81.12,40,128.25a87.65,87.65,0,0,0,22.24,58.16A79.71,79.71,0,0,1,84,165.1a4,4,0,0,1,4.83.32,59.83,59.83,0,0,0,78.28,0,4,4,0,0,1,4.83-.32,79.71,79.71,0,0,1,21.79,21.31A87.62,87.62,0,0,0,216,128Z"/>
+  </svg>
+  <span id="userGreeting" style="font-family:Raleway,sans-serif;font-size:0.82rem;font-weight:600;white-space:nowrap;"></span>
+</button>
+<div id="userDropdownMenu" style="display:none;position:absolute;top:54px;right:12px;background:#1a1025;border:1px solid rgba(255,255,255,0.12);border-radius:12px;min-width:200px;padding:8px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+  <div id="userDropdownInfo" style="padding:10px 12px 8px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:6px;">
+    <div id="dropdownName" style="font-family:Raleway,sans-serif;font-weight:700;font-size:0.9rem;color:#fff;"></div>
+    <div id="dropdownEmail" style="font-family:Raleway,sans-serif;font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;"></div>
+  </div>
+  <button onclick="cerrarSesion()" style="width:100%;text-align:left;background:none;border:none;padding:8px 12px;font-family:Raleway,sans-serif;font-size:0.84rem;color:#F58EA5;font-weight:600;cursor:pointer;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(245,142,165,0.12)'" onmouseout="this.style.background='none'">
+    <i class="fa-solid fa-right-from-bracket" style="margin-right:8px;"></i>Cerrar sesión
+  </button>
+</div>
       </div>
     </header>
 
