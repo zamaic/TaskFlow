@@ -1606,3 +1606,10 @@ select { cursor: pointer; }
 
 .col-color-opt:hover { background: var(--ededed); }
 .col-color-opt.active { background: rgba(203,109,238,0.1); color: var(--purple); }
+
+.project-card-client {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #9a97a8;
+  margin-bottom: 4px;
+}
