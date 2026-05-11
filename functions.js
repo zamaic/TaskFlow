@@ -4,6 +4,33 @@
 
 'use strict';
 
+/* ==============================
+   SESIÓN — Protección de ruta
+   ============================== */
+const STORAGE_SESION = 'tf_sesion';
+
+(function guardSession() {
+  const sesion = localStorage.getItem(STORAGE_SESION);
+  if (!sesion) {
+    window.location.href = 'login.html';
+  }
+})();
+
+/* Datos del usuario activo */
+function getSesion() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_SESION)) || null;
+  } catch {
+    return null;
+  }
+}
+
+function cerrarSesion() {
+  if (!confirm('¿Seguro que deseas cerrar sesión?')) return;
+  localStorage.removeItem(STORAGE_SESION);
+  window.location.href = 'login.html';
+}
+
 /* ---- STATE ---- */
 const STATE = {
   tasks: [],
@@ -67,15 +94,8 @@ const STATUS_DOT_CLASS = {
 /* ==============================
    PROJECT DROPDOWN (TOPBAR)
    ============================== */
-
-/**
- * Rebuilds the dropdown list whenever projects change.
- * Called after init, after creating/deleting a project.
- */
 function refreshProjectDropdown() {
   const dropdown = $('#projectDropdown');
-
-  // Remove all dynamic items 
   $$('.project-dropdown-item', dropdown).forEach(el => el.remove());
 
   STATE.projects.forEach(p => {
@@ -93,45 +113,30 @@ function refreshProjectDropdown() {
     dropdown.appendChild(item);
   });
 
-  // Sync active state
   syncDropdownActive();
 }
 
-/** Marks the currently selected item as active inside the dropdown */
 function syncDropdownActive() {
   const dropdown = $('#projectDropdown');
   $$('.project-dropdown-item', dropdown).forEach(item => {
-    const id = item.dataset.id || '';
-    if (id === (STATE.currentProjectFilter || '')) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
+    item.classList.toggle('active', item.dataset.id === (STATE.currentProjectFilter || ''));
   });
 }
 
-/** Applies a project filter (or clears it when id is null/'') */
 function selectProjectFilter(id, name) {
   STATE.currentProjectFilter = id || null;
   $('#currentProjectName').textContent = name;
   $('#boardTitle').textContent = id ? name : 'Tablero';
-
-  // close dropdown
   $('#projectSelector').classList.remove('open');
-
-  // make sure board view is active and re-render
   switchView('board');
   renderBoard();
 }
 
-/* Toggle dropdown open/close */
 $('#projectSelector').addEventListener('click', function (e) {
-  // Don't toggle if the click was on a dropdown item (they handle themselves)
   if (e.target.closest('.project-dropdown-item')) return;
   this.classList.toggle('open');
 });
 
-/* Close dropdown when clicking outside */
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#projectSelector')) {
     $('#projectSelector').classList.remove('open');
@@ -181,9 +186,7 @@ function renderBoard() {
       const container = $(`#tasks-col-${col.id}`);
       const emptyEl   = $(`#empty-col-${col.id}`);
       const countEl   = $(`#count-col-${col.id}`);
-      const tasks = STATE.tasks.filter(t =>
-        t.proyectoId === project.id && t.columnaId === col.id
-      );
+      const tasks = STATE.tasks.filter(t => t.proyectoId === project.id && t.columnaId === col.id);
       $$('.task-card', container).forEach(el => el.remove());
       countEl.textContent = tasks.length;
       emptyEl.style.display = tasks.length === 0 ? 'flex' : 'none';
@@ -191,7 +194,6 @@ function renderBoard() {
     });
 
   } else {
-    // Siempre reconstruir el board estático de 3 columnas
     board.innerHTML = `
       <div class="kanban-column" data-status="pendiente" id="col-pendiente">
         <div class="column-header">
@@ -236,6 +238,7 @@ function renderBoard() {
         </div>
       </div>
     `;
+
     [['tasks-pendiente','pendiente'],['tasks-en-curso','en-curso'],['tasks-listo','listo']].forEach(([id, status]) => {
       const el = $(`#${id}`);
       el.addEventListener('dragover',  (e) => onDragOver(e));
@@ -243,8 +246,7 @@ function renderBoard() {
       el.addEventListener('dragleave', (e) => onDragLeave(e));
     });
 
-    const statuses = ['pendiente', 'en-curso', 'listo'];
-    statuses.forEach(status => {
+    ['pendiente', 'en-curso', 'listo'].forEach(status => {
       const container = $(`#tasks-${status}`);
       const emptyEl   = $(`#empty-${status}`);
       const countEl   = $(`#count-${status}`);
@@ -299,10 +301,8 @@ function createTaskCard(task) {
     </div>
   `;
 
-  // drag events
   card.addEventListener('dragstart', onDragStart);
   card.addEventListener('dragend', onDragEnd);
-  // click to detail
   card.addEventListener('click', () => openDetailModal(task.id));
 
   return card;
@@ -314,7 +314,6 @@ function createTaskCard(task) {
 function renderProjects() {
   const grid = $('#projectsGrid');
   const noMsg = $('#noProjectsMsg');
-
   $$('.project-card', grid).forEach(el => el.remove());
 
   if (STATE.projects.length === 0) {
@@ -339,19 +338,14 @@ function renderProjects() {
       </div>
       <div class="project-card-footer">
         <button class="btn-secondary project-view-btn" style="padding:6px 12px;font-size:0.76rem;">Ver tablero</button>
-        <button class="project-delete-btn" title="Eliminar proyecto" >
+        <button class="project-delete-btn" title="Eliminar proyecto">
           <i class="fa-solid fa-circle-xmark"></i>
         </button>
       </div>
     `;
 
-    card.querySelector('.project-view-btn').addEventListener('click', (e) => {
-      filterByProject(project.id, project.nombre, e);
-    });
-    card.querySelector('.project-delete-btn').addEventListener('click', (e) => {
-      deleteProject(project.id, e);
-    });
-
+    card.querySelector('.project-view-btn').addEventListener('click', (e) => filterByProject(project.id, project.nombre, e));
+    card.querySelector('.project-delete-btn').addEventListener('click', (e) => deleteProject(project.id, e));
     grid.appendChild(card);
   });
 }
@@ -400,10 +394,10 @@ function renderProgress() {
   const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
 
   const stats = [
-    { value: total,   label: 'Total Tareas',     color: '#CB6DEE' },
-    { value: pending, label: 'Pendientes',        color: '#FFE285' },
-    { value: inProg,  label: 'En Curso',          color: '#7AB7E3' },
-    { value: done,    label: 'Completadas',       color: '#B9DFA4' },
+    { value: total,   label: 'Total Tareas',  color: '#CB6DEE' },
+    { value: pending, label: 'Pendientes',     color: '#FFE285' },
+    { value: inProg,  label: 'En Curso',       color: '#7AB7E3' },
+    { value: done,    label: 'Completadas',    color: '#B9DFA4' },
     { value: STATE.projects.length, label: 'Proyectos', color: '#72DCC3' },
   ];
 
@@ -430,7 +424,6 @@ function renderProgress() {
   `;
   container.appendChild(barWrap);
 
-  // Per-project breakdown
   if (STATE.projects.length > 0) {
     STATE.projects.forEach(project => {
       const pTasks = STATE.tasks.filter(t => t.proyectoId === project.id);
@@ -531,12 +524,11 @@ function populateStatusSelect(proyectoId) {
   if (useCustomCols) {
     project.columns.forEach(col => {
       const opt = document.createElement('option');
-      opt.value = col.id;          // columnaId
+      opt.value = col.id;
       opt.textContent = col.name;
       sel.appendChild(opt);
     });
   } else {
-    // Proyecto sin columnas o sin proyecto → opciones clásicas
     [['pendiente','Pendiente'],['en-curso','En Curso'],['listo','Listo']].forEach(([v, l]) => {
       const opt = document.createElement('option');
       opt.value = v;
@@ -554,7 +546,6 @@ function deleteProject(projectId, e) {
 
   STATE.projects = STATE.projects.filter(p => p.id !== projectId);
   STATE.tasks = STATE.tasks.map(t => t.proyectoId === projectId ? { ...t, proyectoId: null } : t);
-
   saveState();
   refreshProjectDropdown();
 
@@ -606,9 +597,7 @@ function openTaskModal(editId = null) {
     $('#taskPriority').value = task.prioridad;
     $('#taskProject').value  = task.proyectoId || '';
     $('#editingTaskId').value = task.id;
-    // Populate status based on this task's project
     populateStatusSelect(task.proyectoId);
-    // Set status: for custom cols use columnaId, else estado
     const project = task.proyectoId ? STATE.projects.find(p => p.id === task.proyectoId) : null;
     const useCustom = project && Array.isArray(project.columns) && project.columns.length > 0;
     $('#taskStatus').value = useCustom ? (task.columnaId || '') : (task.estado || 'pendiente');
@@ -620,7 +609,6 @@ function openTaskModal(editId = null) {
     populateStatusSelect(projId || null);
   }
 
-  // Re-populate status when project changes
   $('#taskProject').onchange = function() {
     populateStatusSelect(this.value || null);
   };
@@ -644,8 +632,7 @@ $('#taskForm').addEventListener('submit', function(e) {
   $('#taskTitle').classList.remove('error');
   $('#titleError').textContent = '';
 
-  const editId = $('#editingTaskId').value;
-
+  const editId     = $('#editingTaskId').value;
   const proyectoId = $('#taskProject').value || null;
   const project    = proyectoId ? STATE.projects.find(p => p.id === proyectoId) : null;
   const useCustom  = project && Array.isArray(project.columns) && project.columns.length > 0;
@@ -655,7 +642,7 @@ $('#taskForm').addEventListener('submit', function(e) {
     titulo:      titleVal,
     descripcion: $('#taskDesc').value.trim(),
     asignadoA:   $('#taskAssignee').value.trim(),
-    estado:      useCustom ? 'pendiente' : statusVal,   // mantiene estado clásico para compatibilidad
+    estado:      useCustom ? 'pendiente' : statusVal,
     columnaId:   useCustom ? statusVal : null,
     prioridad:   $('#taskPriority').value,
     proyectoId,
@@ -680,13 +667,11 @@ $('#taskForm').addEventListener('submit', function(e) {
   closeTaskModal();
 });
 
-/* ---- Edit from card ---- */
 function openEditModal(taskId, e) {
   if (e) e.stopPropagation();
   openTaskModal(taskId);
 }
 
-/* ---- Delete task ---- */
 function deleteTask(taskId, e) {
   if (e) e.stopPropagation();
   const task = STATE.tasks.find(t => t.id === taskId);
@@ -702,22 +687,16 @@ function deleteTask(taskId, e) {
 /* ==============================
    MODAL — PROJECT WIZARD
    ============================== */
-
-// Wizard state
 const WIZ = {
   step: 1,
-  structure: null,     // 'small' | 'large' | 'manual'
-  manualCols: [],      // [{name, color, order}]
+  structure: null,
+  manualCols: [],
   members: [],
   pendingColColor: '#F3CCFF',
 };
 
 function openProjectModal() {
-  // Reset wizard
-  WIZ.step = 1;
-  WIZ.structure = null;
-  WIZ.manualCols = [];
-  WIZ.members = [];
+  WIZ.step = 1; WIZ.structure = null; WIZ.manualCols = []; WIZ.members = [];
 
   $('#projectName').value      = '';
   $('#projectClient').value    = '';
@@ -731,7 +710,6 @@ function openProjectModal() {
   $$('.color-swatch')[0]?.classList.add('active');
   $('#modeEquipo').checked = true;
   $('#membersGroup').style.display = '';
-
   $$('.structure-option').forEach(o => o.classList.remove('selected'));
 
   wizGoTo(1);
@@ -749,7 +727,6 @@ function wizGoTo(step) {
   $(`#wizardStep${step}`).classList.add('active');
 }
 
-// Step 1 → 2
 $('#wizardNext1').addEventListener('click', () => {
   const name = $('#projectName').value.trim();
   if (!name) {
@@ -761,7 +738,6 @@ $('#wizardNext1').addEventListener('click', () => {
   wizGoTo(2);
 });
 
-// Step 2 → 3 (structure selection)
 $$('.structure-option').forEach(btn => {
   btn.addEventListener('click', function() {
     $$('.structure-option').forEach(o => o.classList.remove('selected'));
@@ -772,10 +748,7 @@ $$('.structure-option').forEach(btn => {
   });
 });
 
-// Step 3 back → 2
 $('#wizardBack2').addEventListener('click', () => wizGoTo(2));
-
-// Step 2 back → 1
 $('#wizardBack1').addEventListener('click', () => wizGoTo(1));
 
 function buildTemplatePreview(structure) {
@@ -786,30 +759,17 @@ function buildTemplatePreview(structure) {
   preview.innerHTML = '';
 
   if (structure === 'small') {
-    preview.style.display = '';
-    builder.style.display = 'none';
+    preview.style.display = ''; builder.style.display = 'none';
     label.textContent = 'Vista previa de plantilla sugerida para proyecto pequeño';
-    const cols = [
-      { name: 'Pendiente', bg: '#F9C8D0' },
-      { name: 'En curso',  bg: '#C0DEFF' },
-      { name: 'Hecho',     bg: '#C8EFC0' },
-    ];
-    cols.forEach(c => preview.appendChild(makePreviewCol(c.name, c.bg, 3)));
+    [{ name:'Pendiente',bg:'#F9C8D0'},{name:'En curso',bg:'#C0DEFF'},{name:'Hecho',bg:'#C8EFC0'}]
+      .forEach(c => preview.appendChild(makePreviewCol(c.name, c.bg, 3)));
   } else if (structure === 'large') {
-    preview.style.display = '';
-    builder.style.display = 'none';
+    preview.style.display = ''; builder.style.display = 'none';
     label.textContent = 'Vista previa de plantilla sugerida para proyecto grande';
-    const cols = [
-      { name: 'Backlog',     bg: '#F3CCFF' },
-      { name: 'Diseño',      bg: '#F9C8D0' },
-      { name: 'Desarrollo',  bg: '#FFF0B0' },
-      { name: 'Revisión',    bg: '#C8EFC0' },
-      { name: 'Aprobado',    bg: '#C0DEFF' },
-    ];
-    cols.forEach(c => preview.appendChild(makePreviewCol(c.name, c.bg, 2)));
+    [{name:'Backlog',bg:'#F3CCFF'},{name:'Diseño',bg:'#F9C8D0'},{name:'Desarrollo',bg:'#FFF0B0'},{name:'Revisión',bg:'#C8EFC0'},{name:'Aprobado',bg:'#C0DEFF'}]
+      .forEach(c => preview.appendChild(makePreviewCol(c.name, c.bg, 2)));
   } else {
-    preview.style.display = 'none';
-    builder.style.display = '';
+    preview.style.display = 'none'; builder.style.display = '';
     label.textContent = 'Cree sus columnas';
     WIZ.manualCols = [];
     renderManualCols();
@@ -826,10 +786,8 @@ function makePreviewCol(name, bg, cardCount) {
   return col;
 }
 
-/* ---- Manual column builder ---- */
 function renderManualCols() {
   const row = $('#manualColsRow');
-  // Remove existing col tiles (not the add button)
   $$('.manual-col-tile', row).forEach(el => el.remove());
 
   WIZ.manualCols.forEach((col, idx) => {
@@ -846,7 +804,6 @@ function renderManualCols() {
     row.insertBefore(tile, $('#addColBtn'));
   });
 
-  // Remove listeners to avoid duplication
   $$('.manual-col-remove').forEach(btn => {
     btn.onclick = function() {
       WIZ.manualCols.splice(parseInt(this.dataset.idx), 1);
@@ -884,20 +841,12 @@ $('#cancelAddCol').addEventListener('click', () => hideModal('addColumnModal'));
 
 $('#acceptAddCol').addEventListener('click', () => {
   const name = $('#colName').value.trim();
-  if (!name) {
-    $('#colNameError').textContent = 'El nombre es obligatorio.';
-    return;
-  }
-  WIZ.manualCols.push({
-    name,
-    color: WIZ.pendingColColor,
-    order: $('#colOrder').value,
-  });
+  if (!name) { $('#colNameError').textContent = 'El nombre es obligatorio.'; return; }
+  WIZ.manualCols.push({ name, color: WIZ.pendingColColor, order: $('#colOrder').value });
   hideModal('addColumnModal');
   renderManualCols();
 });
 
-// Column color dropdown
 $('#colColorSelect').addEventListener('click', function(e) {
   const opt = e.target.closest('.col-color-opt');
   if (opt) {
@@ -922,12 +871,10 @@ function updateColColorBtn(color, label) {
   btn.innerHTML = `<span>${label}</span><i class="fa-solid fa-angle-down"></i>`;
 }
 
-/* ---- Confirm / create project ---- */
 $('#wizardConfirm').addEventListener('click', () => {
   const name = $('#projectName').value.trim();
-
-  // Build columns list for the project
   let columns;
+
   if (WIZ.structure === 'small') {
     columns = [
       { id: uid(), name: 'Pendiente', color: '#F9C8D0', order: 'fecha' },
@@ -965,20 +912,16 @@ $('#wizardConfirm').addEventListener('click', () => {
   hideModal('projectModal');
   showToast(`Proyecto "${name}" creado.`, 'success');
   addNotification(`Nuevo proyecto creado: "${name}"`);
-
   renderProjects();
-  // Navigate to the project board
   filterByProject(project.id, project.nombre);
 });
 
-/* ---- Work mode radio toggle ---- */
 $$('input[name="workMode"]').forEach(radio => {
   radio.addEventListener('change', function() {
     $('#membersGroup').style.display = this.value === 'cuenta' ? 'none' : '';
   });
 });
 
-/* ---- Member chips ---- */
 function addMemberChip(name) {
   if (!name || WIZ.members.includes(name)) return;
   WIZ.members.push(name);
@@ -1011,7 +954,6 @@ $('#memberInput').addEventListener('keydown', e => {
   }
 });
 
-/* ---- Color swatch (step 1) ---- */
 $('#colorPickerRow').addEventListener('click', function(e) {
   const swatch = e.target.closest('.color-swatch');
   if (!swatch) return;
@@ -1115,8 +1057,6 @@ function onDragOver(e) {
   const col = e.currentTarget.closest('.kanban-column');
   if (col) col.classList.add('drag-over');
   e.currentTarget.classList.add('drag-over-inner');
-
-  // show placeholder
   $$('.drag-placeholder').forEach(p => p.remove());
   const placeholder = document.createElement('div');
   placeholder.className = 'drag-placeholder';
@@ -1134,16 +1074,10 @@ function onDrop(e, newStatus) {
   e.preventDefault();
   const taskId = STATE.draggedTaskId || e.dataTransfer.getData('text/plain');
   if (!taskId) return;
-
   const idx = STATE.tasks.findIndex(t => t.id === taskId);
   if (idx === -1) return;
-
   const oldStatus = STATE.tasks[idx].estado;
-  if (oldStatus === newStatus) {
-    renderBoard();
-    return;
-  }
-
+  if (oldStatus === newStatus) { renderBoard(); return; }
   STATE.tasks[idx].estado = newStatus;
   saveState();
   renderAll();
@@ -1169,11 +1103,9 @@ function onDropCustom(e, colId) {
 function switchView(viewName) {
   $$('.view').forEach(v => v.classList.remove('active'));
   $(`#view-${viewName}`)?.classList.add('active');
-
   $$('.nav-item').forEach(n => n.classList.remove('active'));
   $(`.nav-item[data-view="${viewName}"]`)?.classList.add('active');
 
-  // re-render as needed
   if (viewName === 'projects')      renderProjects();
   if (viewName === 'tasks')         renderTasksList();
   if (viewName === 'progress')      renderProgress();
@@ -1191,7 +1123,6 @@ function showModal(id) {
 
 function hideModal(id) {
   $(`#${id}`).classList.remove('open');
-  // only remove overlay if no other modal is open
   if (!$$('.modal.open').length) {
     $('#overlay').classList.remove('active');
     document.body.style.overflow = '';
@@ -1205,12 +1136,9 @@ function showToast(message, type = 'info') {
   const container = $('#toastContainer');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-
   const icons = { success: 'fa-check-circle', error: 'fa-circle-xmark', info: 'fa-circle-info' };
   toast.innerHTML = `<i class="fa-solid ${icons[type] || 'fa-circle-info'}"></i>${escapeHtml(message)}`;
-
   container.appendChild(toast);
-
   setTimeout(() => {
     toast.style.animation = 'toastOut 0.3s forwards';
     setTimeout(() => toast.remove(), 300);
@@ -1223,11 +1151,8 @@ function showToast(message, type = 'info') {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
 /* ==============================
@@ -1235,7 +1160,6 @@ function escapeHtml(str) {
    ============================== */
 function renderAll() {
   renderBoard();
-  // lazy-render other views only if visible
   const activeView = $('.view.active')?.id;
   if (activeView === 'view-projects')      renderProjects();
   if (activeView === 'view-tasks')         renderTasksList();
@@ -1267,14 +1191,7 @@ $$('.nav-item').forEach(item => {
     e.preventDefault();
     const view = this.dataset.view;
     if (!view) return;
-
-    // close mobile sidebar
     sidebar.classList.remove('mobile-open');
-
-    if (view === 'board') {
-      // keep the current filter when navigating back to board
-    }
-
     switchView(view);
   });
 });
@@ -1301,7 +1218,7 @@ $('#clearNotifBtn').addEventListener('click', () => {
   showToast('Notificaciones limpiadas.', 'info');
 });
 
-// Overlay click closes modals
+
 $('#overlay').addEventListener('click', () => {
   $$('.modal.open').forEach(m => hideModal(m.id));
   sidebar.classList.remove('mobile-open');
@@ -1309,7 +1226,6 @@ $('#overlay').addEventListener('click', () => {
   document.body.style.overflow = '';
 });
 
-// ESC key closes modals
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     $$('.modal.open').forEach(m => hideModal(m.id));
@@ -1323,21 +1239,75 @@ document.addEventListener('keydown', e => {
 function init() {
   loadState();
 
-  // seed demo data on first run
+  /* ---- User menu ---- */
+const sesion = getSesion();
+const btnLogin   = $('#btnIrLogin');
+const btnMenu    = $('#btnUserMenu');
+const userDropdown = $('#userDropdown');
+
+if (!sesion) {
+  // Sin sesión activa (no debería llegar aquí por guardSession, pero por si acaso)
+  btnLogin.style.display = 'flex';
+  btnMenu.style.display  = 'none';
+  btnLogin.addEventListener('click', () => { window.location.href = 'login.html'; });
+} else {
+  // Con sesión: mostrar avatar con iniciales
+  btnLogin.style.display = 'none';
+  btnMenu.style.display  = 'flex';
+
+  const initials = sesion.nombre
+    ? sesion.nombre.split(' ').slice(0, 2).map(n => n[0]?.toUpperCase() || '').join('')
+    : 'U';
+
+  $('#userInitials').textContent  = initials;
+  $('#userShortName').textContent = sesion.nombre?.split(' ')[0] || 'Usuario';
+
+  // Llenar dropdown
+  $('#ddAvatar').textContent = initials;
+  $('#ddName').textContent   = sesion.nombre  || 'Usuario';
+  $('#ddEmail').textContent  = sesion.correo  || '';
+  $('#ddRol').textContent    = sesion.rol      || 'Sin rol';
+
+  // Toggle dropdown al hacer clic en el botón
+  btnMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const abierto = userDropdown.style.display === 'block';
+    userDropdown.style.display = abierto ? 'none' : 'block';
+    $('#userMenuArrow').style.transform = abierto ? 'rotate(0deg)' : 'rotate(180deg)';
+  });
+
+  // Cerrar al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#userMenuWrap')) {
+      userDropdown.style.display = 'none';
+      $('#userMenuArrow').style.transform = 'rotate(0deg)';
+    }
+  });
+
+  // Botón cerrar sesión dentro del dropdown
+  $('#btnCerrarSesion').addEventListener('click', cerrarSesion);
+
+  // Hover en el botón logout
+  const logoutBtn = $('#btnCerrarSesion');
+  logoutBtn.addEventListener('mouseenter', () => logoutBtn.style.background = 'rgba(245,142,165,0.12)');
+  logoutBtn.addEventListener('mouseleave', () => logoutBtn.style.background = 'none');
+}
+
+  // Seed demo data on first run
   if (STATE.projects.length === 0 && STATE.tasks.length === 0) {
     const p1 = { id: uid(), nombre: 'Rediseño Web', descripcion: 'Actualizar la interfaz pública de la plataforma.', color: '#CB6DEE' };
     const p2 = { id: uid(), nombre: 'MVP App', descripcion: 'Primer prototipo funcional de la app móvil.', color: '#7AB7E3' };
     STATE.projects.push(p1, p2);
 
     const demoTasks = [
-      { titulo: 'Diseñar wireframes de inicio',   descripcion: 'Crear bocetos de la pantalla principal para revisión del equipo.', estado: 'pendiente',  prioridad: 'alta',  asignadoA: 'Samara A.',   proyectoId: p1.id },
-      { titulo: 'Definir paleta de colores',       descripcion: 'Seleccionar colores base y de acento para el sistema de diseño.', estado: 'en-curso',   prioridad: 'media', asignadoA: 'Mercedes P.', proyectoId: p1.id },
-      { titulo: 'Configurar proyecto en Figma',   descripcion: 'Crear el archivo base con las guías tipográficas y componentes.',  estado: 'listo',      prioridad: 'baja',  asignadoA: 'Hilary R.',   proyectoId: p1.id },
-      { titulo: 'Definir stack tecnológico',       descripcion: 'Seleccionar las tecnologías para frontend y backend del MVP.',    estado: 'listo',      prioridad: 'alta',  asignadoA: 'Adriana S.',  proyectoId: p2.id },
-      { titulo: 'Modelado de base de datos',       descripcion: 'Crear el diagrama ER y las migraciones iniciales.',               estado: 'en-curso',   prioridad: 'alta',  asignadoA: 'Sofía S.',   proyectoId: p2.id },
-      { titulo: 'Implementar autenticación',       descripcion: 'Integrar OAuth con Google para registro e inicio de sesión.',     estado: 'pendiente',  prioridad: 'alta',  asignadoA: 'Samara A.',   proyectoId: p2.id },
-      { titulo: 'Crear componente Kanban',         descripcion: null,                                                              estado: 'pendiente',  prioridad: 'media', asignadoA: 'Mercedes P.', proyectoId: null  },
-      { titulo: 'Escribir documentación inicial',  descripcion: 'README con instrucciones de instalación y guía de uso.',          estado: 'pendiente',  prioridad: 'baja',  asignadoA: null,          proyectoId: null  },
+      { titulo: 'Diseñar wireframes de inicio',   descripcion: 'Crear bocetos de la pantalla principal para revisión del equipo.', estado: 'pendiente', prioridad: 'alta',  asignadoA: 'Samara A.',   proyectoId: p1.id },
+      { titulo: 'Definir paleta de colores',       descripcion: 'Seleccionar colores base y de acento para el sistema de diseño.', estado: 'en-curso',  prioridad: 'media', asignadoA: 'Mercedes P.', proyectoId: p1.id },
+      { titulo: 'Configurar proyecto en Figma',   descripcion: 'Crear el archivo base con guías tipográficas y componentes.',      estado: 'listo',     prioridad: 'baja',  asignadoA: 'Hilary R.',   proyectoId: p1.id },
+      { titulo: 'Definir stack tecnológico',       descripcion: 'Seleccionar las tecnologías para frontend y backend del MVP.',    estado: 'listo',     prioridad: 'alta',  asignadoA: 'Adriana S.',  proyectoId: p2.id },
+      { titulo: 'Modelado de base de datos',       descripcion: 'Crear el diagrama ER y las migraciones iniciales.',               estado: 'en-curso',  prioridad: 'alta',  asignadoA: 'Sofía S.',    proyectoId: p2.id },
+      { titulo: 'Implementar autenticación',       descripcion: 'Integrar OAuth con Google para registro e inicio de sesión.',     estado: 'pendiente', prioridad: 'alta',  asignadoA: 'Samara A.',   proyectoId: p2.id },
+      { titulo: 'Crear componente Kanban',         descripcion: null,                                                              estado: 'pendiente', prioridad: 'media', asignadoA: 'Mercedes P.', proyectoId: null  },
+      { titulo: 'Escribir documentación inicial',  descripcion: 'README con instrucciones de instalación y guía de uso.',          estado: 'pendiente', prioridad: 'baja',  asignadoA: null,          proyectoId: null  },
     ];
 
     demoTasks.forEach(t => STATE.tasks.push({ id: uid(), ...t }));
@@ -1346,8 +1316,9 @@ function init() {
 
   renderAll();
   populateProjectSelect();
-  refreshProjectDropdown();   // ← populate topbar dropdown on start
+  refreshProjectDropdown();
   switchView('board');
+
   if (STATE.projects.length > 0) {
     selectProjectFilter(STATE.projects[0].id, STATE.projects[0].nombre);
   } else {

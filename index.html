@@ -16,8 +16,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">
-        <!-- NEW LOGO: using uploaded image file -->
-        <img src="img/Vector_Logo_Blanco.png" alt="TaskFlow Logo" class="logo-image" style="width: 24px; height: 24px;"/>
+        <img src="img/Vector_Logo_Blanco.png" alt="TaskFlow Logo" class="logo-image" style="width:24px;height:24px;"/>
       </div>
       <span class="logo-text">TaskFlow</span>
     </div>
@@ -87,42 +86,97 @@
           <i class="fa-solid fa-bars"></i>
         </button>
 
-        <!-- PROJECT SELECTOR with dropdown -->
         <div class="topbar-project-selector" id="projectSelector">
           <span id="currentProjectName">Todos los proyectos</span>
           <i class="fa-solid fa-angle-down" id="selectorArrow"></i>
-          <!-- DROPDOWN -->
-          <div class="project-dropdown" id="projectDropdown">
-            <!-- Items injected by JS -->
-          </div>
+          <div class="project-dropdown" id="projectDropdown"></div>
         </div>
       </div>
+
       <div class="topbar-right">
         <button class="topbar-btn" title="Equipo">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="22" height="22" fill="#fff">
             <path d="M164.38,181.1a52,52,0,1,0-72.76,0,75.89,75.89,0,0,0-30,28.89,12,12,0,0,0,20.78,12,53,53,0,0,1,91.22,0,12,12,0,1,0,20.78-12A75.89,75.89,0,0,0,164.38,181.1ZM100,144a28,28,0,1,1,28,28A28,28,0,0,1,100,144Zm147.21,9.59a12,12,0,0,1-16.81-2.39c-8.33-11.09-19.85-19.59-29.33-21.64a12,12,0,0,1-1.82-22.91,20,20,0,1,0-24.78-28.3,12,12,0,1,1-21-11.6,44,44,0,1,1,73.28,48.35,92.18,92.18,0,0,1,22.85,21.69A12,12,0,0,1,247.21,153.59Zm-192.28-24c-9.48,2.05-21,10.55-29.33,21.65A12,12,0,0,1,6.41,136.79,92.37,92.37,0,0,1,29.26,115.1a44,44,0,1,1,73.28-48.35,12,12,0,1,1-21,11.6,20,20,0,1,0-24.78,28.3,12,12,0,0,1-1.82,22.91Z"/>
           </svg>
         </button>
-        <button class="topbar-btn" title="Ajustes" id="openSettingsBtn">
+
+        <button class="topbar-btn" title="Ajustes">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="22" height="22" fill="#fff">
             <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Z"/>
           </svg>
         </button>
-        <button class="topbar-btn avatar-btn" title="Usuario" id="userMenuBtn">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="22" height="22" fill="#fff">
-    <path d="M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm60,8A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.09,88.09,0,0,0-91.47-87.93C77.43,41.89,39.87,81.12,40,128.25a87.65,87.65,0,0,0,22.24,58.16A79.71,79.71,0,0,1,84,165.1a4,4,0,0,1,4.83.32,59.83,59.83,0,0,0,78.28,0,4,4,0,0,1,4.83-.32,79.71,79.71,0,0,1,21.79,21.31A87.62,87.62,0,0,0,216,128Z"/>
-  </svg>
-  <span id="userGreeting" style="font-family:Raleway,sans-serif;font-size:0.82rem;font-weight:600;white-space:nowrap;"></span>
-</button>
-<div id="userDropdownMenu" style="display:none;position:absolute;top:54px;right:12px;background:#1a1025;border:1px solid rgba(255,255,255,0.12);border-radius:12px;min-width:200px;padding:8px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
-  <div id="userDropdownInfo" style="padding:10px 12px 8px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:6px;">
-    <div id="dropdownName" style="font-family:Raleway,sans-serif;font-weight:700;font-size:0.9rem;color:#fff;"></div>
-    <div id="dropdownEmail" style="font-family:Raleway,sans-serif;font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;"></div>
-  </div>
-  <button onclick="cerrarSesion()" style="width:100%;text-align:left;background:none;border:none;padding:8px 12px;font-family:Raleway,sans-serif;font-size:0.84rem;color:#F58EA5;font-weight:600;cursor:pointer;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(245,142,165,0.12)'" onmouseout="this.style.background='none'">
-    <i class="fa-solid fa-right-from-bracket" style="margin-right:8px;"></i>Cerrar sesión
-  </button>
-</div>
+
+        <!-- ============================================
+             BOTÓN USUARIO — se adapta según sesión
+             ============================================ -->
+        <div class="user-menu-wrap" id="userMenuWrap" style="position:relative;">
+
+          <!-- Estado SIN sesión: botón "Iniciar sesión" -->
+          <button class="topbar-btn user-login-btn" id="btnIrLogin"
+            style="display:none; gap:7px; padding:0 14px; width:auto; font-family:Raleway,sans-serif; font-size:0.82rem; font-weight:700; color:#fff; white-space:nowrap;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="18" height="18" fill="#fff">
+              <path d="M141.66,133.66l-40,40a8,8,0,0,1-11.32-11.32L116.69,136H24a8,8,0,0,1,0-16h92.69L90.34,93.66a8,8,0,0,1,11.32-11.32l40,40A8,8,0,0,1,141.66,133.66ZM200,32H136a8,8,0,0,0,0,16h56V208H136a8,8,0,0,0,0,16h64a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Z"/>
+            </svg>
+            Iniciar sesión
+          </button>
+
+          <!-- Estado CON sesión: avatar + nombre -->
+          <button class="topbar-btn avatar-btn" id="btnUserMenu"
+            style="display:none; gap:8px; padding:0 12px; width:auto; font-family:Raleway,sans-serif;">
+            <!-- Iniciales del usuario -->
+            <span id="userInitials"
+              style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.25);
+              font-size:0.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            </span>
+            <span id="userShortName"
+              style="font-size:0.82rem;font-weight:700;color:#fff;white-space:nowrap;max-width:110px;
+              overflow:hidden;text-overflow:ellipsis;">
+            </span>
+            <i class="fa-solid fa-angle-down" id="userMenuArrow"
+              style="font-size:0.7rem;color:rgba(255,255,255,0.6);transition:transform 0.2s;"></i>
+          </button>
+
+          <!-- DROPDOWN DE USUARIO -->
+          <div id="userDropdown"
+            style="display:none;position:absolute;top:calc(100% + 10px);right:0;
+            background:#1a1025;border:1px solid rgba(255,255,255,0.12);
+            border-radius:14px;min-width:210px;padding:6px;z-index:999;
+            box-shadow:0 12px 40px rgba(0,0,0,0.45);
+            animation:dropdownIn 0.18s cubic-bezier(.4,0,.2,1);">
+
+            <!-- Info del usuario -->
+            <div style="padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <div id="ddAvatar"
+                style="width:40px;height:40px;border-radius:50%;
+                background:linear-gradient(135deg,#CB6DEE,#7AB7E3);
+                display:flex;align-items:center;justify-content:center;
+                font-size:0.9rem;font-weight:800;color:#fff;margin-bottom:10px;">
+              </div>
+              <div id="ddName"
+                style="font-family:Raleway,sans-serif;font-weight:800;font-size:0.92rem;color:#fff;
+                line-height:1.2;margin-bottom:3px;"></div>
+              <div id="ddEmail"
+                style="font-family:Raleway,sans-serif;font-size:0.72rem;color:rgba(255,255,255,0.45);
+                margin-bottom:4px;"></div>
+              <span id="ddRol"
+                style="display:inline-block;font-family:Raleway,sans-serif;font-size:0.68rem;font-weight:700;
+                padding:2px 8px;border-radius:20px;
+                background:rgba(203,109,238,0.2);color:#CB6DEE;"></span>
+            </div>
+
+            <!-- Acción: cerrar sesión -->
+            <button id="btnCerrarSesion"
+              style="width:100%;text-align:left;background:none;border:none;
+              padding:9px 14px;font-family:Raleway,sans-serif;font-size:0.84rem;
+              color:#F58EA5;font-weight:700;cursor:pointer;border-radius:9px;
+              transition:background 0.15s;display:flex;align-items:center;gap:9px;">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+        <!-- fin user-menu-wrap -->
+
       </div>
     </header>
 
@@ -143,8 +197,6 @@
             Nueva Tarea
           </button>
         </div>
-
-        <!-- KANBAN BOARD -->
         <div class="kanban-board" id="kanbanBoard">
           <div class="kanban-column" data-status="pendiente" id="col-pendiente">
             <div class="column-header">
@@ -154,14 +206,10 @@
                 <span class="column-count" id="count-pendiente">0</span>
               </div>
             </div>
-            <div class="column-body" id="tasks-pendiente" ondragover="onDragOver(event)" ondrop="onDrop(event, 'pendiente')" ondragleave="onDragLeave(event)">
-              <div class="empty-state" id="empty-pendiente">
-                <i class="fa-regular fa-file"></i>
-                <p>Sin tareas pendientes</p>
-              </div>
+            <div class="column-body" id="tasks-pendiente" ondragover="onDragOver(event)" ondrop="onDrop(event,'pendiente')" ondragleave="onDragLeave(event)">
+              <div class="empty-state" id="empty-pendiente"><i class="fa-regular fa-file"></i><p>Sin tareas pendientes</p></div>
             </div>
           </div>
-
           <div class="kanban-column" data-status="en-curso" id="col-en-curso">
             <div class="column-header">
               <div class="column-title-wrap">
@@ -170,14 +218,10 @@
                 <span class="column-count" id="count-en-curso">0</span>
               </div>
             </div>
-            <div class="column-body" id="tasks-en-curso" ondragover="onDragOver(event)" ondrop="onDrop(event, 'en-curso')" ondragleave="onDragLeave(event)">
-              <div class="empty-state" id="empty-en-curso">
-                <i class="fa-regular fa-file"></i>
-                <p>Sin tareas en curso</p>
-              </div>
+            <div class="column-body" id="tasks-en-curso" ondragover="onDragOver(event)" ondrop="onDrop(event,'en-curso')" ondragleave="onDragLeave(event)">
+              <div class="empty-state" id="empty-en-curso"><i class="fa-regular fa-file"></i><p>Sin tareas en curso</p></div>
             </div>
           </div>
-
           <div class="kanban-column" data-status="listo" id="col-listo">
             <div class="column-header">
               <div class="column-title-wrap">
@@ -186,11 +230,8 @@
                 <span class="column-count" id="count-listo">0</span>
               </div>
             </div>
-            <div class="column-body" id="tasks-listo" ondragover="onDragOver(event)" ondrop="onDrop(event, 'listo')" ondragleave="onDragLeave(event)">
-              <div class="empty-state" id="empty-listo">
-                <i class="fa-regular fa-file"></i>
-                <p>Sin tareas completadas</p>
-              </div>
+            <div class="column-body" id="tasks-listo" ondragover="onDragOver(event)" ondrop="onDrop(event,'listo')" ondragleave="onDragLeave(event)">
+              <div class="empty-state" id="empty-listo"><i class="fa-regular fa-file"></i><p>Sin tareas completadas</p></div>
             </div>
           </div>
         </div>
@@ -199,9 +240,7 @@
       <!-- PROJECTS VIEW -->
       <div class="view" id="view-projects">
         <div class="board-header">
-          <div class="board-header-left">
-            <h1 class="board-title">Proyectos</h1>
-          </div>
+          <div class="board-header-left"><h1 class="board-title">Proyectos</h1></div>
           <button class="btn-primary" id="openProjectModalBtn">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ffffff" viewBox="0 0 256 256">
               <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/>
@@ -211,18 +250,15 @@
         </div>
         <div class="projects-grid" id="projectsGrid">
           <div class="no-projects-msg" id="noProjectsMsg">
-            <i class="fa-solid fa-folder-open"></i>
-            <p>No hay proyectos aún. ¡Crea el primero!</p>
+            <i class="fa-solid fa-folder-open"></i><p>No hay proyectos aún. ¡Crea el primero!</p>
           </div>
         </div>
       </div>
 
-      <!-- TASKS VIEW (list) -->
+      <!-- TASKS VIEW -->
       <div class="view" id="view-tasks">
         <div class="board-header">
-          <div class="board-header-left">
-            <h1 class="board-title">Todas las Tareas</h1>
-          </div>
+          <div class="board-header-left"><h1 class="board-title">Todas las Tareas</h1></div>
           <button class="btn-primary" id="openModalBtnTasks">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ffffff" viewBox="0 0 256 256">
               <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/>
@@ -231,19 +267,14 @@
           </button>
         </div>
         <div class="tasks-list-view" id="allTasksList">
-          <div class="no-tasks-msg">
-            <i class="fa-solid fa-list-check"></i>
-            <p>No hay tareas todavía.</p>
-          </div>
+          <div class="no-tasks-msg"><i class="fa-solid fa-list-check"></i><p>No hay tareas todavía.</p></div>
         </div>
       </div>
 
       <!-- PROGRESS VIEW -->
       <div class="view" id="view-progress">
         <div class="board-header">
-          <div class="board-header-left">
-            <h1 class="board-title">Progreso del Proyecto</h1>
-          </div>
+          <div class="board-header-left"><h1 class="board-title">Progreso del Proyecto</h1></div>
         </div>
         <div class="progress-view" id="progressView"></div>
       </div>
@@ -251,16 +282,11 @@
       <!-- NOTIFICATIONS VIEW -->
       <div class="view" id="view-notifications">
         <div class="board-header">
-          <div class="board-header-left">
-            <h1 class="board-title">Notificaciones</h1>
-          </div>
+          <div class="board-header-left"><h1 class="board-title">Notificaciones</h1></div>
           <button class="btn-secondary" id="clearNotifBtn">Limpiar todo</button>
         </div>
         <div class="notifications-list" id="notificationsList">
-          <div class="no-notif-msg">
-            <i class="fa-solid fa-bell-slash"></i>
-            <p>Sin notificaciones nuevas.</p>
-          </div>
+          <div class="no-notif-msg"><i class="fa-solid fa-bell-slash"></i><p>Sin notificaciones nuevas.</p></div>
         </div>
       </div>
 
@@ -275,9 +301,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title" id="modalTitle">Nueva Tarea</h2>
-        <button class="modal-close" id="closeModalBtn" aria-label="Cerrar">
-          <i class="fa-solid fa-circle-xmark"></i>
-        </button>
+        <button class="modal-close" id="closeModalBtn" aria-label="Cerrar"><i class="fa-solid fa-circle-xmark"></i></button>
       </div>
       <form class="modal-form" id="taskForm" novalidate>
         <div class="form-group">
@@ -296,8 +320,7 @@
           </div>
           <div class="form-group">
             <label for="taskStatus">Estado</label>
-            <select id="taskStatus">
-            </select>
+            <select id="taskStatus"></select>
           </div>
         </div>
         <div class="form-row">
@@ -311,9 +334,7 @@
           </div>
           <div class="form-group">
             <label for="taskProject">Proyecto</label>
-            <select id="taskProject">
-              <option value="">Sin proyecto</option>
-            </select>
+            <select id="taskProject"><option value="">Sin proyecto</option></select>
           </div>
         </div>
         <input type="hidden" id="editingTaskId" value="" />
@@ -325,7 +346,7 @@
     </div>
   </div>
 
- <!-- PROJECT MODAL (wizard 3 pasos) -->
+  <!-- PROJECT MODAL -->
   <div class="modal" id="projectModal" role="dialog" aria-modal="true">
     <div class="modal-content modal-content--wizard">
       <div class="modal-header">
@@ -333,31 +354,22 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="18" height="18" style="vertical-align:middle;margin-right:6px;" fill="currentColor"><path d="M168,152a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,152Zm-8-40H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16Zm56-64V216a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V48A16,16,0,0,1,56,32H92.26a47.92,47.92,0,0,1,71.48,0H200A16,16,0,0,1,216,48ZM96,64h64a32,32,0,0,0-64,0ZM200,48H173.25A47.93,47.93,0,0,1,176,64v8a8,8,0,0,1-8,8H88a8,8,0,0,1-8-8V64a47.93,47.93,0,0,1,2.75-16H56V216H200Z"/></svg>
           Nuevo proyecto
         </h2>
-        <button class="modal-close" id="closeProjectModalBtn" aria-label="Cerrar">
-          <i class="fa-solid fa-circle-xmark"></i>
-        </button>
+        <button class="modal-close" id="closeProjectModalBtn" aria-label="Cerrar"><i class="fa-solid fa-circle-xmark"></i></button>
       </div>
-
-      <!-- STEPPER -->
       <div class="wizard-layout">
         <div class="wizard-stepper">
           <div class="wizard-step active" data-step="1">
-            <div class="step-circle">1</div>
-            <span class="step-label">Datos generales</span>
+            <div class="step-circle">1</div><span class="step-label">Datos generales</span>
           </div>
           <div class="wizard-step-line"></div>
           <div class="wizard-step" data-step="2">
-            <div class="step-circle">2</div>
-            <span class="step-label">Estructura</span>
+            <div class="step-circle">2</div><span class="step-label">Estructura</span>
           </div>
           <div class="wizard-step-line"></div>
           <div class="wizard-step" data-step="3">
-            <div class="step-circle">3</div>
-            <span class="step-label">Confirmar plantilla</span>
+            <div class="step-circle">3</div><span class="step-label">Confirmar plantilla</span>
           </div>
         </div>
-
-        <!-- STEP 1: Datos generales -->
         <div class="wizard-panel active" id="wizardStep1">
           <div class="form-group">
             <label for="projectName">Nombre del proyecto <span class="required">*</span></label>
@@ -382,13 +394,11 @@
               <div class="radio-group">
                 <label class="radio-option">
                   <input type="radio" name="workMode" value="equipo" id="modeEquipo" checked />
-                  <span class="radio-dot active-dot"></span>
-                  En equipo
+                  <span class="radio-dot active-dot"></span>En equipo
                 </label>
                 <label class="radio-option">
                   <input type="radio" name="workMode" value="cuenta" id="modeCuenta" />
-                  <span class="radio-dot"></span>
-                  Por mi cuenta
+                  <span class="radio-dot"></span>Por mi cuenta
                 </label>
               </div>
             </div>
@@ -396,9 +406,7 @@
           <div class="form-group" id="membersGroup">
             <label>Añadir miembros al proyecto</label>
             <div class="members-input-row">
-              <button type="button" class="member-add-btn" id="memberAddBtn" title="Añadir miembro">
-                <i class="fa-solid fa-plus"></i>
-              </button>
+              <button type="button" class="member-add-btn" id="memberAddBtn" title="Añadir miembro"><i class="fa-solid fa-plus"></i></button>
               <div class="members-chips" id="membersChips"></div>
               <input type="text" id="memberInput" placeholder="Nombre del miembro..." style="flex:1;min-width:120px;" />
             </div>
@@ -420,8 +428,6 @@
             <button type="button" class="btn-primary" id="wizardNext1">Siguiente</button>
           </div>
         </div>
-
-        <!-- STEP 2: Estructura -->
         <div class="wizard-panel" id="wizardStep2">
           <p class="wizard-question">¿Cómo se estructura tu entrega?</p>
           <div class="structure-options">
@@ -442,13 +448,9 @@
             <button type="button" class="btn-secondary" id="wizardBack1">Atrás</button>
           </div>
         </div>
-
-        <!-- STEP 3: Confirmar plantilla -->
         <div class="wizard-panel" id="wizardStep3">
           <p class="wizard-question" id="templatePreviewLabel">Vista previa de plantilla sugerida</p>
-          <!-- Preview columns rendered by JS -->
           <div class="template-preview" id="templatePreview"></div>
-          <!-- Manual column builder (shown only for "manual") -->
           <div class="manual-columns-builder" id="manualBuilder" style="display:none">
             <div class="manual-cols-row" id="manualColsRow">
               <button type="button" class="add-col-btn" id="addColBtn">
@@ -466,14 +468,12 @@
     </div>
   </div>
 
-  <!-- ADD COLUMN MODAL (sub-modal for manual mode) -->
+  <!-- ADD COLUMN MODAL -->
   <div class="modal" id="addColumnModal" role="dialog" aria-modal="true">
     <div class="modal-content modal-content--sm">
       <div class="modal-header">
         <h2 class="modal-title">Nueva columna</h2>
-        <button class="modal-close" id="closeAddColModal" aria-label="Cerrar">
-          <i class="fa-solid fa-circle-xmark"></i>
-        </button>
+        <button class="modal-close" id="closeAddColModal" aria-label="Cerrar"><i class="fa-solid fa-circle-xmark"></i></button>
       </div>
       <div class="modal-form">
         <div class="form-group">
@@ -522,9 +522,7 @@
         <h2 class="modal-title" id="detailTaskTitle">Detalle de Tarea</h2>
         <div class="modal-header-actions">
           <button class="icon-btn" id="editTaskBtn" title="Editar"><i class="fa-solid fa-pen"></i></button>
-          <button class="modal-close" id="closeDetailModalBtn" aria-label="Cerrar">
-            <i class="fa-solid fa-circle-xmark"></i>
-          </button>
+          <button class="modal-close" id="closeDetailModalBtn" aria-label="Cerrar"><i class="fa-solid fa-circle-xmark"></i></button>
         </div>
       </div>
       <div class="task-detail-body" id="taskDetailBody"></div>
