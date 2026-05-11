@@ -324,17 +324,17 @@ function renderProjects() {
 
   STATE.projects.forEach(project => {
     const taskCount = STATE.tasks.filter(t => t.proyectoId === project.id).length;
-    const doneCount = STATE.tasks.filter(t => t.proyectoId === project.id && t.estado === 'listo').length;
+    //const doneCount = STATE.tasks.filter(t => t.proyectoId === project.id && t.estado === 'listo').length;
 
     const card = document.createElement('div');
     card.className = 'project-card';
     card.style.setProperty('--project-color', project.color);
     card.innerHTML = `
       <h3 class="project-card-name">${escapeHtml(project.nombre)}</h3>
+      ${project.cliente ? `<p class="project-card-client">${escapeHtml(project.cliente)}</p>` : ''}
       <p class="project-card-desc">${escapeHtml(project.descripcion || 'Sin descripción')}</p>
       <div class="project-card-stats">
         <span class="project-stat"><i class="fa-solid fa-list-check"></i> ${taskCount} tareas</span>
-        <span class="project-stat"><i class="fa-solid fa-check"></i> ${doneCount} listas</span>
       </div>
       <div class="project-card-footer">
         <button class="btn-secondary project-view-btn" style="padding:6px 12px;font-size:0.76rem;">Ver tablero</button>
@@ -538,6 +538,30 @@ function populateStatusSelect(proyectoId) {
   }
 }
 
+function populateAssigneeSelect(proyectoId) {
+  const input = $('#taskAssignee');
+  // Remove any existing datalist
+  const old = $('#assigneeDatalist');
+  if (old) old.remove();
+
+  const project = proyectoId ? STATE.projects.find(p => p.id === proyectoId) : null;
+  const members = project?.miembros || [];
+
+  if (members.length > 0) {
+    const dl = document.createElement('datalist');
+    dl.id = 'assigneeDatalist';
+    members.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      dl.appendChild(opt);
+    });
+    document.body.appendChild(dl);
+    input.setAttribute('list', 'assigneeDatalist');
+  } else {
+    input.removeAttribute('list');
+  }
+}
+
 function deleteProject(projectId, e) {
   if (e) e.stopPropagation();
   const project = STATE.projects.find(p => p.id === projectId);
@@ -598,6 +622,7 @@ function openTaskModal(editId = null) {
     $('#taskProject').value  = task.proyectoId || '';
     $('#editingTaskId').value = task.id;
     populateStatusSelect(task.proyectoId);
+    populateAssigneeSelect(task.proyectoId);
     const project = task.proyectoId ? STATE.projects.find(p => p.id === task.proyectoId) : null;
     const useCustom = project && Array.isArray(project.columns) && project.columns.length > 0;
     $('#taskStatus').value = useCustom ? (task.columnaId || '') : (task.estado || 'pendiente');
@@ -607,10 +632,12 @@ function openTaskModal(editId = null) {
     const projId = STATE.currentProjectFilter || '';
     if (projId) $('#taskProject').value = projId;
     populateStatusSelect(projId || null);
+    populateAssigneeSelect(projId || null);
   }
 
   $('#taskProject').onchange = function() {
     populateStatusSelect(this.value || null);
+    populateAssigneeSelect(this.value || null);
   };
 
   showModal('taskModal');
@@ -969,10 +996,46 @@ function openDetailModal(taskId) {
   const task = STATE.tasks.find(t => t.id === taskId);
   if (!task) return;
 
-  const project = task.proyectoId ? STATE.projects.find(p => p.id === task.proyectoId) : null;
+  const project    = task.proyectoId ? STATE.projects.find(p => p.id === task.proyectoId) : null;
+  const useCustom  = project && Array.isArray(project.columns) && project.columns.length > 0;
+
+  // Build status label for display
+  let currentStatusLabel;
+  if (useCustom) {
+    const col = project.columns.find(c => c.id === task.columnaId);
+    currentStatusLabel = col?.name || '—';
+  } else {
+    currentStatusLabel = STATUS_LABELS[task.estado] || task.estado;
+  }
 
   $('#detailTaskTitle').textContent = task.titulo;
   $('#editTaskBtn').onclick = () => { hideModal('taskDetailModal'); openTaskModal(task.id); };
+
+  // Build quick-change buttons
+  let statusButtons;
+  if (useCustom) {
+    statusButtons = project.columns.map(col => {
+      const isActive = task.columnaId === col.id;
+      return `<button data-colid="${col.id}"
+        style="padding:6px 14px;border-radius:8px;border:1.5px solid #e0e0e0;
+        font-family:Raleway,sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;
+        background:${isActive ? 'linear-gradient(135deg,#CB6DEE,#7A98E3)' : '#f5f5f8'};
+        color:${isActive ? '#fff' : '#6B6880'};transition:all 0.2s;">
+        ${escapeHtml(col.name)}
+      </button>`;
+    }).join('');
+  } else {
+    statusButtons = ['pendiente','en-curso','listo'].map(s => {
+      const isActive = task.estado === s;
+      return `<button data-status="${s}"
+        style="padding:6px 14px;border-radius:8px;border:1.5px solid #e0e0e0;
+        font-family:Raleway,sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;
+        background:${isActive ? 'linear-gradient(135deg,#CB6DEE,#7A98E3)' : '#f5f5f8'};
+        color:${isActive ? '#fff' : '#6B6880'};transition:all 0.2s;">
+        ${STATUS_LABELS[s]}
+      </button>`;
+    }).join('');
+  }
 
   $('#taskDetailBody').innerHTML = `
     <div class="detail-section">
@@ -982,7 +1045,7 @@ function openDetailModal(taskId) {
     <div class="detail-section">
       <div class="detail-label">Estado & Prioridad</div>
       <div class="detail-chips">
-        <span class="task-list-status-tag">${STATUS_LABELS[task.estado]}</span>
+        <span class="task-list-status-tag">${escapeHtml(currentStatusLabel)}</span>
         <span class="priority-badge priority-${task.prioridad}">
           <i class="fa-solid fa-flag" style="color:${PRIORITY_COLORS[task.prioridad]}"></i>
           ${task.prioridad.charAt(0).toUpperCase() + task.prioridad.slice(1)}
@@ -1001,20 +1064,22 @@ function openDetailModal(taskId) {
     </div>
     <div class="detail-section" style="margin-top:20px;padding-top:16px;border-top:1.5px solid #eee;">
       <div class="detail-label">Cambiar estado rápido</div>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-        ${['pendiente','en-curso','listo'].map(s => `
-          <button onclick="quickChangeStatus('${task.id}','${s}')"
-            style="padding:6px 14px;border-radius:8px;border:1.5px solid #e0e0e0;
-            font-family:Raleway,sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;
-            background:${task.estado===s?'linear-gradient(135deg,#CB6DEE,#7A98E3)':'#f5f5f8'};
-            color:${task.estado===s?'#fff':'#6B6880'};
-            transition:all 0.2s;">
-            ${STATUS_LABELS[s]}
-          </button>
-        `).join('')}
+      <div id="quickStatusBtns" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        ${statusButtons}
       </div>
     </div>
   `;
+
+  // Attach events to quick-status buttons
+  $$('#quickStatusBtns button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (useCustom) {
+        quickChangeColumn(task.id, btn.dataset.colid);
+      } else {
+        quickChangeStatus(task.id, btn.dataset.status);
+      }
+    });
+  });
 
   showModal('taskDetailModal');
 }
@@ -1030,6 +1095,23 @@ function quickChangeStatus(taskId, newStatus) {
   hideModal('taskDetailModal');
   showToast(`Tarea movida a "${STATUS_LABELS[newStatus]}".`, 'success');
   addNotification(`Tarea "${STATE.tasks[idx].titulo}" → ${STATUS_LABELS[newStatus]}`);
+}
+
+function quickChangeColumn(taskId, colId) {
+  const idx = STATE.tasks.findIndex(t => t.id === taskId);
+  if (idx === -1) return;
+  if (STATE.tasks[idx].columnaId === colId) return;
+
+  const project = STATE.projects.find(p => p.id === STATE.tasks[idx].proyectoId);
+  const col     = project?.columns?.find(c => c.id === colId);
+  const colName = col?.name || 'nueva columna';
+
+  STATE.tasks[idx].columnaId = colId;
+  saveState();
+  renderAll();
+  hideModal('taskDetailModal');
+  showToast(`Tarea movida a "${colName}".`, 'success');
+  addNotification(`Tarea "${STATE.tasks[idx].titulo}" → ${colName}`);
 }
 
 /* ==============================
@@ -1091,10 +1173,17 @@ function onDropCustom(e, colId) {
   if (!taskId) return;
   const idx = STATE.tasks.findIndex(t => t.id === taskId);
   if (idx === -1) return;
+  if (STATE.tasks[idx].columnaId === colId) { renderBoard(); return; }
+
+  const project = STATE.projects.find(p => p.id === STATE.tasks[idx].proyectoId);
+  const col     = project?.columns?.find(c => c.id === colId);
+  const colName = col?.name || 'nueva columna';
+
   STATE.tasks[idx].columnaId = colId;
   saveState();
   renderAll();
-  showToast('Tarea movida.', 'success');
+  showToast(`Tarea movida a "${colName}".`, 'success');
+  addNotification(`Tarea "${STATE.tasks[idx].titulo}" movida a ${colName}`);
 }
 
 /* ==============================
