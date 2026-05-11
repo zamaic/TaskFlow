@@ -390,8 +390,14 @@ function renderProgress() {
   const total   = STATE.tasks.length;
   const pending = STATE.tasks.filter(t => t.estado === 'pendiente').length;
   const inProg  = STATE.tasks.filter(t => t.estado === 'en-curso').length;
-  const done    = STATE.tasks.filter(t => t.estado === 'listo').length;
-  const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
+  const done = STATE.tasks.filter(t => {
+    if (t.estado === 'listo') return true;
+    const project = STATE.projects.find(p => p.id === t.proyectoId);
+    if (!project || !project.columns) return false;
+    const currentCol = project.columns.find(c => c.id === t.columnaId);
+    return currentCol?.name === 'Aprobado';
+  }).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   const stats = [
     { value: total,   label: 'Total Tareas',  color: '#CB6DEE' },
@@ -427,8 +433,18 @@ function renderProgress() {
   if (STATE.projects.length > 0) {
     STATE.projects.forEach(project => {
       const pTasks = STATE.tasks.filter(t => t.proyectoId === project.id);
-      const pDone  = pTasks.filter(t => t.estado === 'listo').length;
-      const pPct   = pTasks.length > 0 ? Math.round((pDone / pTasks.length) * 100) : 0;
+      const pDone = pTasks.filter(t => {
+        // Proyectos básicos
+        if (t.estado === 'listo') return true;
+
+        // Proyectos personalizados
+        const project = STATE.projects.find(p => p.id === t.proyectoId);
+        if (!project || !project.columns) return false;
+        const currentCol = project.columns.find(c => c.id === t.columnaId);
+        return currentCol?.name === 'Aprobado';
+      }).length;
+
+      const pPct = pTasks.length > 0 ? Math.round((pDone / pTasks.length) * 100) : 0;
 
       const pBar = document.createElement('div');
       pBar.className = 'progress-bar-wrap';
@@ -482,6 +498,7 @@ function addNotification(text) {
   const badge = $('#notifBadge');
   badge.textContent = STATE.notifications.length;
   badge.style.display = 'inline';
+  renderHomeNotif();
 }
 
 function formatTime(ts) {
@@ -1249,6 +1266,7 @@ function escapeHtml(str) {
    ============================== */
 function renderAll() {
   renderBoard();
+  renderHomeNotif();
   const activeView = $('.view.active')?.id;
   if (activeView === 'view-projects')      renderProjects();
   if (activeView === 'view-tasks')         renderTasksList();
@@ -1320,6 +1338,40 @@ document.addEventListener('keydown', e => {
     $$('.modal.open').forEach(m => hideModal(m.id));
     $('#projectSelector').classList.remove('open');
   }
+});
+
+/* ==============================
+   HOME — NOTIF PANEL
+   ============================== */
+function renderHomeNotif() {
+  const list = $('#homeNotifList');
+  if (!list) return;
+  list.innerHTML = '';
+
+  if (!STATE.notifications.length) {
+    list.innerHTML = '<p class="home-notif-empty">Aún no hay notificaciones que mostrar</p>';
+    return;
+  }
+
+  STATE.notifications.slice().reverse().slice(0, 10).forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'home-notif-item' + (!n.leida ? ' unread' : '');
+    item.innerHTML = `
+      <span>${escapeHtml(n.text)}</span>
+      <span class="home-notif-time">${formatTime(n.timestamp)}</span>
+    `;
+    item.addEventListener('click', () => {
+      n.leida = true;
+      saveState();
+      renderHomeNotif();
+    });
+    list.appendChild(item);
+  });
+}
+
+$('#verNotifBtn')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  switchView('notifications');
 });
 
 /* ==============================
@@ -1404,6 +1456,7 @@ if (!sesion) {
   }
 
   renderAll();
+  renderHomeNotif();
   populateProjectSelect();
   refreshProjectDropdown();
   switchView('board');
