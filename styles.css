@@ -119,7 +119,7 @@ body {
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 600;
-  transition: backgroundvar(--transition), color var(--transition);
+  transition: background var(--transition), color var(--transition);
   white-space: nowrap;
   position: relative;
 }
@@ -143,11 +143,17 @@ body {
   display: flex; align-items: center; justify-content: center;
   background: rgba(255,255,255,0.06);
   flex-shrink: 0;
-  transition: backgroundvar(--transition);
+  transition: background var(--transition);
 }
 
 .nav-icon svg { fill: var(--sidebar-text); transition: fill var(--transition); }
 .nav-item:hover .nav-icon svg { fill: #ffffff; }
+
+.notif-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 .notif-badge {
   background: var(--pink);
@@ -156,7 +162,33 @@ body {
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 20px;
-  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: static;
+}
+
+.sidebar.collapsed .notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
+
+
+@media (max-width: 900px) and (min-width: 641px) {
+  .sidebar .nav-item .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar:not(.mobile-open) .nav-item .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+  }
 }
 
 .sidebar-footer {
@@ -174,7 +206,7 @@ body {
   color: var(--sidebar-text);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: backgroundvar(--transition), transform var(--transition);
+  transition: background var(--transition), transform var(--transition);
 }
 
 .sidebar-toggle-btn:hover { background: rgba(255,255,255,0.13); color: #fff; }
@@ -242,7 +274,7 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
   font-family: 'Raleway', sans-serif;
-  transition: backgroundvar(--transition);
+  transition: background var(--transition);
   position: relative;  /* anchor for dropdown */
   user-select: none;
 }
@@ -297,7 +329,7 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   cursor: pointer;
-  transition: backgroundvar(--transition), color var(--transition);
+  transition: background var(--transition), color var(--transition);
   white-space: nowrap;
 }
 
@@ -327,13 +359,15 @@ body {
 }
 
 .topbar-btn {
+  position: relative;
+  flex-shrink: 0;
   width: 38px; height: 38px;
   border-radius: 10px;
   background: rgba(255,255,255,0.09);
   border: 1px solid rgba(255,255,255,0.10);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: backgroundvar(--transition);
+  transition: background var(--transition);
 }
 
 .topbar-btn:hover { background: rgba(255,255,255,0.16); }
@@ -348,8 +382,6 @@ body {
   overflow-y: auto;
   background: var(--card);
   min-height: calc(100vh - var(--topbar-h));
-  border-top-left-radius: 26px;
-  border-top-right-radius: 26px;
 }
 
 /* ==============================
@@ -361,27 +393,36 @@ body {
 /* ==============================
    BOARD HEADER
    ============================== */
+
+
 .board-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  width: 100%;
   margin-bottom: 26px;
-  flex-wrap: wrap;
-  gap: 12px;
 }
 
 .board-header-left {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
+
 
 .board-title {
   font-size: 1.55rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 
 .task-count {
   font-size: 0.82rem;
@@ -391,6 +432,50 @@ body {
   padding: 3px 10px;
   border-radius: 20px;
   white-space: nowrap;
+}
+
+/* ==============================
+   BOARD HEADER FIX REAL DESKTOP
+   ============================== */
+
+.home-layout {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.home-left {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.home-notif-panel {
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
+}
+
+.board-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.board-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.board-header .btn-primary {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* ==============================
@@ -436,7 +521,7 @@ body {
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: backgroundvar(--transition), border-color var(--transition);
+  transition: background var(--transition), border-color var(--transition);
 }
 
 .btn-secondary:hover { background: var(--ededed); border-color: rgba(0,0,0,0.12); }
@@ -450,7 +535,7 @@ body {
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.8rem;
-  transition: backgroundvar(--transition);
+  transition: background var(--transition);
 }
 
 .icon-btn:hover { background: rgba(203,109,238,0.2); }
@@ -642,7 +727,7 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 0.78rem;
   color: var(--text-secondary);
-  transition: backgroundvar(--transition), color var(--transition);
+  transition: background var(--transition), color var(--transition);
 }
 
 .card-action-btn:hover { background: var(--ededed); }
@@ -693,7 +778,7 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: 600;
   align-items: center;
   justify-content: center;
   padding: 20px;
@@ -853,7 +938,7 @@ select { cursor: pointer; }
   position: fixed;
   inset: 0;
   background: rgba(10,5,20,0.45);
-  z-index: 400;
+  z-index: 190;
   backdrop-filter: blur(3px);
 }
 
@@ -929,7 +1014,7 @@ select { cursor: pointer; }
   font-size: 0.8rem;
   padding: 4px 6px;
   border-radius: 6px;
-  transition: color var(--transition), backgroundvar(--transition);
+  transition: color var(--transition), background var(--transition);
 }
 
 .project-delete-btn:hover { color: var(--pink); background: rgba(245,142,165,0.1); }
@@ -1224,7 +1309,9 @@ select { cursor: pointer; }
 @media (max-width: 900px) {
   :root { --sidebar-w: 68px; }
   .sidebar .logo-text,
-  .sidebar .nav-item span:not(.notif-badge) { opacity: 0; width: 0; overflow: hidden; }
+  .sidebar .nav-item > span:not(.notif-badge),
+  .sidebar .nav-item .notif-label-wrap > span:first-child { opacity: 0; width: 0; overflow: hidden; }
+  .sidebar .nav-item .notif-label-wrap { gap: 0; min-width: 0; }
   .sidebar .sidebar-logo { justify-content: center; }
   .sidebar .nav-item { justify-content: center; padding: 10px 0; }
   .sidebar-toggle-btn { display: none; }
@@ -1235,19 +1322,52 @@ select { cursor: pointer; }
   .home-layout {
     grid-template-columns: 1fr;
   }
+
   .home-notif-panel {
     position: relative;
     top: auto;
     max-height: none;
+    margin-top: 10px;
+    display: none;
   }
+
   .board-header {
-    flex-direction: column;
+    display: flex;
+    flex-direction: row;
     align-items: flex-start;
-    gap: 14px;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
   }
+
   .kanban-board {
     grid-template-columns: 1fr;
   }
+
+  .home-notif-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+
+    padding: 14px 18px;
+    margin-bottom: 14px;
+
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .home-notif-panel.open {
+    display: flex;
+  }
+}
+
+.home-notif-toggle {
+  display: none;
 }
 
 @media (max-width: 640px) {
@@ -1255,6 +1375,7 @@ select { cursor: pointer; }
   .sidebar {
     transform: translateX(-100%);
     width: 220px;
+    z-index: 210;
   }
   .sidebar.mobile-open {
     transform: translateX(0);
@@ -1262,15 +1383,82 @@ select { cursor: pointer; }
   }
   .sidebar.mobile-open .logo-text,
   .sidebar.mobile-open .nav-item span:not(.notif-badge) { opacity: 1; width: auto; }
+  .sidebar.mobile-open .notif-label-wrap { gap: 8px; }
+  .sidebar.mobile-open .nav-item .notif-badge {
+    position: static;
+    margin-left: 2px;
+  }
   .sidebar.mobile-open .sidebar-logo { justify-content: flex-start; }
   .sidebar.mobile-open .nav-item { justify-content: flex-start; padding: 10px 12px; }
 
   .mobile-menu-btn { display: flex; }
-  .kanban-board { grid-template-columns: 1fr; }
-  .main-content { padding: 18px 14px 32px; }
   .form-row { grid-template-columns: 1fr; }
-  .board-header { flex-direction: column; align-items: flex-start; }
+
+  /* Sin padding lateral en main-content — lo manejamos por elemento */
+  .main-content { padding: 18px 0 32px; }
+
+  /* Board header con padding lateral */
+  .board-header {
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 16px;
+    margin-bottom: 16px;
+  }
+  .board-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
+  .board-header-left .board-title { font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+  /* Layout principal: flex columna, sin restricción de ancho */
+  .home-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+  .home-left {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Panel notif inline: ancho completo con padding propio */
+  .home-notif-inline-mobile {
+    width: 100%;
+    margin: 0 0 12px 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  /* Kanban: columna única, ancho total, sin bordes laterales para que se vea fluido */
+  .kanban-board {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    padding: 0 12px;
+    min-height: unset;
+  }
+
+  .kanban-column {
+    width: 100%;
+  }
+}
+
+  
+
 
 /* ==============================
    SCROLLBAR
@@ -1666,29 +1854,44 @@ select { cursor: pointer; }
 /* ==============================
    HOME LAYOUT
    ============================== */
-.home-layout {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 20px;
-  align-items: start;
-  height: 100%;
-}
+
 
 .home-left {
-  min-width: 0; /* evita que el kanban desborde */
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .home-notif-panel {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+/* PANEL DESKTOP */
+.home-notif-panel {
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
+
   position: sticky;
-  top: 20px;
+  top: 28px;
+
   max-height: calc(100vh - 100px);
+
   background: var(--card);
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
+
   padding: 20px;
+
   display: flex;
   flex-direction: column;
+
   overflow: hidden;
+
+  box-shadow: var(--shadow-card);
 }
 
 .home-notif-header {
@@ -1746,4 +1949,183 @@ select { cursor: pointer; }
 .home-notif-time {
   font-size: 0.72rem;
   color: var(--text-secondary);
+}
+
+/* ==============================
+   NOTIF MOBILE PILL
+   ============================== */
+.notif-mobile-summary {
+  display: none;
+}
+
+/* Pantallas medianas: panel debajo del kanban, sin fixed */
+@media (max-width: 1100px) {
+  .home-notif-panel {
+    position: relative;
+    bottom: auto;
+    left: auto; right: auto;
+    max-height: none;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    padding: 20px;
+    overflow: visible;
+    transition: none;
+    z-index: auto;
+    box-shadow: var(--shadow-card);
+    margin-top: 20px;
+    display: flex;
+  }
+
+  .home-notif-header {
+    display: flex;
+  }
+
+  .home-notif-body {
+    padding: 0;
+    overflow-y: auto;
+    max-height: 400px;
+  }
+
+  .home-left {
+    padding-bottom: 0;
+  }
+}
+
+/* Solo en mobile real: pill sticky abajo */
+@media (max-width: 640px) {
+  /* El panel fluye normalmente debajo del kanban, sin fixed */
+  .home-notif-panel {
+    position: relative;
+    bottom: auto;
+    left: auto; right: auto;
+    max-height: none;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    padding: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
+    z-index: auto;
+    box-shadow: var(--shadow-card);
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    max-height: 52px;
+  }
+
+  .home-notif-panel.notif-expanded {
+    max-height: 500px;
+  }
+
+  .notif-mobile-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+    background: var(--card);
+    border-radius: var(--radius);
+  }
+
+  .notif-mobile-summary i:first-child {
+    color: var(--purple);
+    font-size: 1rem;
+  }
+
+  .notif-mobile-summary #notifSummaryArrow {
+    margin-left: auto;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+  }
+
+  .home-notif-panel.notif-expanded #notifSummaryArrow {
+    transform: rotate(180deg);
+  }
+
+  .home-notif-header {
+    display: none;
+  }
+
+  .home-notif-body {
+    padding: 12px 16px;
+    overflow-y: auto;
+    max-height: 440px;
+  }
+
+}
+
+/* ==============================
+   NOTIF INLINE MOBILE
+   (solo visible en ≤640px, dentro del home-left)
+   ============================== */
+.home-notif-inline-mobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .home-notif-inline-mobile {
+    display: block;
+    margin: 12px 0;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    width: 100%;
+  }
+
+  .home-notif-inline-mobile .notif-mobile-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .home-notif-inline-mobile .notif-mobile-summary i:first-child {
+    color: var(--purple);
+  }
+
+  .home-notif-inline-mobile .notif-mobile-summary #notifSummaryArrow2 {
+    margin-left: auto;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+  }
+
+  .home-notif-inline-mobile .notif-mobile-summary span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .home-notif-body-inline {
+    display: none;
+    padding: 0 14px 14px;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .home-notif-inline-mobile.notif-inline-open .home-notif-body-inline {
+    display: flex;
+  }
+
+  .home-notif-panel {
+    display: none !important;
+  }
+
+  
 }

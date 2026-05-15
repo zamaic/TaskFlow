@@ -494,11 +494,23 @@ function addNotification(text) {
   STATE.notifications.push({ id: uid(), text, timestamp: Date.now() });
   if (STATE.notifications.length > 50) STATE.notifications.shift();
   saveState();
-
-  const badge = $('#notifBadge');
-  badge.textContent = STATE.notifications.length;
-  badge.style.display = 'inline';
+  refreshNotifBadge();
   renderHomeNotif();
+  renderHomeNotifInline();
+  updateNotifSummary();
+}
+
+function refreshNotifBadge() {
+  const badge = $('#notifBadge');
+  const count = STATE.notifications.length;
+  badge.textContent = count;
+  if (count === 0) {
+    badge.style.display = 'none';
+    badge.classList.add('hidden');
+  } else {
+    badge.style.display = 'inline-flex';
+    badge.classList.remove('hidden');
+  }
 }
 
 function formatTime(ts) {
@@ -1267,6 +1279,7 @@ function escapeHtml(str) {
 function renderAll() {
   renderBoard();
   renderHomeNotif();
+  renderHomeNotifInline();
   const activeView = $('.view.active')?.id;
   if (activeView === 'view-projects')      renderProjects();
   if (activeView === 'view-tasks')         renderTasksList();
@@ -1299,6 +1312,8 @@ $$('.nav-item').forEach(item => {
     const view = this.dataset.view;
     if (!view) return;
     sidebar.classList.remove('mobile-open');
+    $('#overlay').classList.remove('active');
+    document.body.style.overflow = '';
     switchView(view);
   });
 });
@@ -1321,7 +1336,10 @@ $('#clearNotifBtn').addEventListener('click', () => {
   STATE.notifications = [];
   saveState();
   renderNotifications();
-  $('#notifBadge').style.display = 'none';
+  renderHomeNotif();
+  renderHomeNotifInline();
+  refreshNotifBadge();
+  updateNotifSummary();
   showToast('Notificaciones limpiadas.', 'info');
 });
 
@@ -1339,6 +1357,26 @@ document.addEventListener('keydown', e => {
     $('#projectSelector').classList.remove('open');
   }
 });
+
+function renderHomeNotifInline() {
+  const list = $('#homeNotifListInline');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!STATE.notifications.length) {
+    list.innerHTML = '<p class="home-notif-empty">Aún no hay notificaciones que mostrar</p>';
+    return;
+  }
+  STATE.notifications.slice().reverse().slice(0, 10).forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'home-notif-item' + (!n.leida ? ' unread' : '');
+    item.innerHTML = `
+      <span>${escapeHtml(n.text)}</span>
+      <span class="home-notif-time">${formatTime(n.timestamp)}</span>
+    `;
+    item.addEventListener('click', () => { n.leida = true; saveState(); renderHomeNotifInline(); });
+    list.appendChild(item);
+  });
+}
 
 /* ==============================
    HOME — NOTIF PANEL
@@ -1372,6 +1410,31 @@ function renderHomeNotif() {
 $('#verNotifBtn')?.addEventListener('click', (e) => {
   e.preventDefault();
   switchView('notifications');
+});
+
+/* Mobile notif pill */
+function updateNotifSummary() {
+  const count = STATE.notifications.length;
+  const label = count > 0
+    ? `${count} notificación${count !== 1 ? 'es' : ''} nueva${count !== 1 ? 's' : ''}`
+    : 'Sin notificaciones';
+  const t1 = $('#notifSummaryText');
+  if (t1) t1.textContent = label;
+  const t2 = $('#notifSummaryText2');
+  if (t2) t2.textContent = label;
+}
+
+$('#notifMobileSummary')?.addEventListener('click', () => {
+  const panel = $('#homeNotifPanel');
+  panel.classList.toggle('notif-expanded');
+});
+
+$('#notifMobileSummary2')?.addEventListener('click', () => {
+  const panel = $('#homeNotifInlineMobile');
+  const arrow = $('#notifSummaryArrow2');
+  const body  = $('#homeNotifListInline');
+  const open  = panel.classList.toggle('notif-inline-open');
+  if (arrow) arrow.style.transform = open ? 'rotate(180deg)' : '';
 });
 
 /* ==============================
@@ -1457,6 +1520,9 @@ if (!sesion) {
 
   renderAll();
   renderHomeNotif();
+  renderHomeNotifInline();
+  refreshNotifBadge();
+  updateNotifSummary();
   populateProjectSelect();
   refreshProjectDropdown();
   switchView('board');
